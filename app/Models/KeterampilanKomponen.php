@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class KeterampilanKomponen extends Model
 {
     use HasFactory;
+    protected $table = 'keterampilan_komponents';
     protected $keyType = 'string';
     public $incrementing = false;
+
+    public function indikatorCollection(){
+        return $this->hasMany(KeterampilanIndikator::class,'komponen','id');
+    }
 }

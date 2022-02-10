@@ -61,7 +61,7 @@ export default class UpdatePackage extends React.Component{
             try {
                 let response = await savePackage(this.props.token, formData);
                 if (response.data.params === null) {
-                    showErrorMessage(response.data.message,'modal-create');
+                    showErrorMessage(response.data.message,'modal-update');
                 } else {
                     this.props.handleClose();
                     this.props.handleUpdate();
@@ -69,10 +69,10 @@ export default class UpdatePackage extends React.Component{
                     showSuccessMessage(response.data.message);
                 }
             } catch (er) {
-                showErrorMessage(er.response.data.message,'modal-create');
+                showErrorMessage(er.response.data.message,'modal-update');
             }
         } catch (error) {
-            showErrorMessage('Unable to create form data','modal-create');
+            showErrorMessage('Unable to create form data','modal-update');
         }
         button.submit.disabled = false;
         button.submit.icon = <i className="fas fa-save"/>;
@@ -82,7 +82,7 @@ export default class UpdatePackage extends React.Component{
     render(){
         return (
             <Dialog
-                id="modal-create" fullWidth maxWidth="lg"
+                id="modal-update" fullWidth maxWidth="lg"
                 open={this.props.open}
                 onClose={()=>this.state.button.submit.disabled ? null : this.props.handleClose(null) }
                 scroll="body">

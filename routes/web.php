@@ -20,5 +20,8 @@ Route::any('/logout',[AuthController::class,'logout'])->middleware('auth')->name
 
 Route::get('/',function (){ return view('home'); });
 Route::group(['prefix' => 'master'],function (){
-    Route::get('/packages',function (){ return view('master.packages'); });
+    Route::group(['prefix' => 'packages'],function (){
+        Route::get('/',function (){ return view('master.packages'); });
+        Route::get('/{packages}/keterampilan', function (){ return view('master.packages.keterampilan'); });
+    });
 });

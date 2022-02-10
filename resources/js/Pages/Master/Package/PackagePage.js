@@ -133,6 +133,8 @@ export default class PackagePage extends React.Component{
         const columns = [
             { name : 'Nama Paket Soal', selector : row => row.label, sortable : true },
             { name : 'Jurusan', selector : row => row.meta.jurusan.name, sortable : true },
+            { name : 'Keterampilan', selector : row => <a href={window.origin+'/master/packages/' + row.value + '/keterampilan/'}>{row.meta.komponen.keterampilan.length} Komponen</a>, sortable : true, center : true },
+            { name : 'Sikap', selector : row => <a href="">{row.meta.komponen.sikap.length} Komponen</a> , sortable : true, center : true },
             { name : '', width : '100px', center : true, selector : row =>
                 this.state.current_user === null ? null :
                     this.state.current_user.meta.level !== 'admin' ? null :
@@ -166,7 +168,7 @@ export default class PackagePage extends React.Component{
                     <section className="content">
                         <div className="card">
                             <div className="card-header">
-                                <h3 className="card-title"></h3>
+                                <h3 className="card-title"/>
                                 <div className="card-tools">
                                     <button disabled={this.state.loading} onClick={this.toggleCreate} className="btn btn-primary btn-sm mr-1" title="Tambah Data">
                                         <i className="fas fa-plus-circle"/> Tambah Data

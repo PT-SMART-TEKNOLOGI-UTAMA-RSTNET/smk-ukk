@@ -10,11 +10,18 @@ namespace App\Repositories;
 
 
 use App\Models\PaketSoal;
+use App\Repositories\Komponen\KeterampilanRepository;
 use Illuminate\Http\Request;
 use Ramsey\Uuid\Uuid;
 
 class PackageRepository
 {
+    protected $komponenRepository;
+    public function __construct()
+    {
+        $this->komponenRepository = new KeterampilanRepository();
+    }
+
     public function delete(Request $request){
         try {
             PaketSoal::where('id', $request->id)->delete();
@@ -66,7 +73,11 @@ class PackageRepository
                     'meta' => [
                         'keterangan' => $package->description,
                         'jurusan' => $package->jurusanObj,
-                        'eng' => $package->name_eng
+                        'eng' => $package->name_eng,
+                        'komponen' => [
+                            'keterampilan' => $this->komponenRepository->table(new Request(['paket' => $package->id])),
+                            'sikap' => collect([])
+                        ]
                     ]
                 ]);
             }
