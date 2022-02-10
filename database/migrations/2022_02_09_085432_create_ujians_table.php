@@ -19,8 +19,8 @@ class CreateUjiansTable extends Migration
             $table->uuid('id')->primary()->unique();
             $table->uuid('jurusan');
             $table->string('name');
-            $table->timestamp('start_at');
-            $table->timestamp('end_at');
+            $table->dateTime('start_at');
+            $table->dateTime('end_at');
             $table->timestamps();
 
             switch (config('database.erapor')){
