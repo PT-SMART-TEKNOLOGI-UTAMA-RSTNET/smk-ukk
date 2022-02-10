@@ -14,7 +14,7 @@ class AddNomorToKeterampilanIndikatorsTable extends Migration
     public function up()
     {
         Schema::table('keterampilan_indikators', function (Blueprint $table) {
-            $table->integer('nomor')->after('name')->default(0);
+            $table->integer('nomor')->after('komponen')->default(0);
         });
     }
 
