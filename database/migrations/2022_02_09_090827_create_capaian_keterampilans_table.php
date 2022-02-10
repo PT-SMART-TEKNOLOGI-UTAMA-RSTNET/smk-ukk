@@ -16,14 +16,14 @@ class CreateCapaianKeterampilansTable extends Migration
         Schema::create('capaian_keterampilans', function (Blueprint $table) {
             $table->uuid('id')->primary()->unique();
             $table->uuid('indikator');
-            $table->uuid('siswa');
+            $table->uuid('peserta');
             $table->tinyInteger('nilai')->default(0);
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();
             $table->timestamps();
 
             $table->foreign('indikator')->on('keterampilan_indikators')->references('id')->onDelete('cascade')->onUpdate('no action');
-            $table->foreign('siswa')->on('users')->references('id')->onDelete('cascade')->onUpdate('no action');
+            $table->foreign('peserta')->on('pesertas')->references('id')->onDelete('cascade')->onUpdate('no action');
             $table->foreign('created_by')->on('users')->references('id')->onDelete('set null')->onUpdate('no action');
             $table->foreign('updated_by')->on('users')->references('id')->onDelete('set null')->onUpdate('no action');
         });

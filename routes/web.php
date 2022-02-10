@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +15,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::any('/login',[AuthController::class,'login'])->name('login');
+Route::any('/logout',[AuthController::class,'logout'])->middleware('auth')->name('logout');
+
+Route::get('/',function (){ return view('home'); });
+Route::group(['prefix' => 'master'],function (){
+    Route::get('/packages',function (){ return view('master.packages'); });
 });

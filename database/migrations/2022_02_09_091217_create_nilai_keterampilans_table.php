@@ -15,12 +15,12 @@ class CreateNilaiKeterampilansTable extends Migration
     {
         Schema::create('nilai_keterampilans', function (Blueprint $table) {
             $table->uuid('id')->primary()->unique();
-            $table->uuid('siswa');
+            $table->uuid('peserta');
             $table->uuid('paket');
             $table->integer('nilai')->default(0);
             $table->timestamps();
 
-            $table->foreign('siswa')->on('users')->references('id')->onDelete('cascade')->onUpdate('no action');
+            $table->foreign('peserta')->on('pesertas')->references('id')->onDelete('cascade')->onUpdate('no action');
             $table->foreign('paket')->on('paket_soals')->references('id')->onDelete('cascade')->onUpdate('no action');
         });
     }

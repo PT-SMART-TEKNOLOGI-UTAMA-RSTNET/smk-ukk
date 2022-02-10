@@ -17,15 +17,14 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->uuid('id')->primary()->unique();
+            $table->uuid('siswa')->nullable();
+            $table->uuid('jurusan')->nullable();
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('user_type')->default('admin')->comment('admin,penguji,siswa');
             $table->string('penguji_type')->nullable()->comment('internal,external');
-            $table->uuid('siswa')->nullable();
-            $table->uuid('penguji_internal')->nullable();
-            $table->uuid('penguji_external')->nullable();
             $table->string('nis',40)->nullable();
             $table->string('nopes',60)->nullable();
             $table->string('nisn',50)->nullable();
@@ -41,6 +40,7 @@ class CreateUsersTable extends Migration
                     break;
             }
             $table->foreign('siswa')->on(new Expression($eraporDb . '.siswas'))->references('id')->onDelete('set null')->onUpdate('no action');
+            $table->foreign('jurusan')->on(new Expression($eraporDb . '.jurusans'))->references('id')->onDelete('cascade')->onUpdate('no action');
         });
     }
 

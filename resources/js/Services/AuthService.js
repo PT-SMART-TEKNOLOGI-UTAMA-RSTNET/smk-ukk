@@ -1,0 +1,18 @@
+import Axios from 'axios';
+
+export const loginAttempt = async (data) => {
+    let request = Axios({
+        method : 'post',
+        data : data,
+        url : window.origin + '/login'
+    });
+    return Promise.resolve(request);
+};
+export const currentUser = async (token) => {
+    let request = Axios({
+        headers : { "Authorization" : "Bearer " + token },
+        method : 'get',
+        url : window.origin + '/api/auth/me'
+    });
+    return Promise.resolve(request);
+};
