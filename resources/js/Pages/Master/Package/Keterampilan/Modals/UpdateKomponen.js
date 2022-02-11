@@ -10,13 +10,13 @@ import {compactGrid} from '../../../../../Components/DataTableStyles';
 import {showErrorMessage, showSuccessMessage} from "../../../../../Components/Alerts";
 import {komponenOptions,pengujiTypeOptions} from "../../../../../Components/KomponenOptions";
 
-export default class CreateKomponen extends React.Component{
+export default class UpdateKomponen extends React.Component{
     constructor(props){
         super(props);
         this.state = {
             form : {
-                _method : 'put', paket : '', komponen : null, sub_komponen : '', nomor : 0,
-                indikator : [], penguji : null,
+                _method : 'patch', paket : '', komponen : null, sub_komponen : '', nomor : 0,
+                indikator : [], penguji : null, indikator_deleted : [],
                 nilai_sangat_baik : 0, nilai_baik : 0, nilai_cukup : 0, nilai_tidak : 0
             },
             button : {
@@ -25,32 +25,41 @@ export default class CreateKomponen extends React.Component{
                 }
             }
         };
-        this.submitCreateKomponen = this.submitCreateKomponen.bind(this);
+        this.submitUpdateKomponen = this.submitUpdateKomponen.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.handleInput = this.handleInput.bind(this);
         this.handleAddIndikator = this.handleAddIndikator.bind(this);
         this.handleDeleteIndikator = this.handleDeleteIndikator.bind(this);
     }
     componentWillReceiveProps(props){
-        if (props.data !== null) {
+        if (props.data !== null && props.komponen_data !== null) {
             let form = this.state.form;
-            form.paket = props.data.value;
-            form.nomor = props.data.meta.komponen.keterampilan.length + 1;
-            form.komponen = null,
-                form.nilai_tidak = 0, form.nilai_baik = 0,
-                form.nilai_cukup = 0, form.nilai_sangat_baik = 0,
-                form.sub_komponen = '',
-                form.indikator = [],
-                form.penguji = null;
+            form.id = props.komponen_data.value,
+                form.paket = props.data.value,
+                form.nomor = props.komponen_data.meta.nomor,
+                form.komponen = komponenOptions[komponenOptions.findIndex((i) => i.value === props.komponen_data.meta.komponen)],
+                form.nilai_tidak = props.komponen_data.meta.nilai.t, form.nilai_baik = props.komponen_data.meta.nilai.b,
+                form.nilai_cukup = props.komponen_data.meta.nilai.c, form.nilai_sangat_baik = props.komponen_data.meta.nilai.sb,
+                form.sub_komponen = props.komponen_data.label,
+                form.indikator = [], form.indikator_deleted = [],
+                form.penguji = pengujiTypeOptions[pengujiTypeOptions.findIndex((i) => i.value === props.komponen_data.meta.type)];
+            props.komponen_data.meta.indikator.map((item,index)=>{
+                form.indikator.push({
+                    value : item.id, label : item.indikator, nomor : item.nomor, index : index, is_default : true,
+                });
+            });
             this.setState({form});
         }
     }
     handleDeleteIndikator(data){
         let form = this.state.form;
-        form.indikator.splice(data.value,1);
+        form.indikator.splice(data.index,1);
+        if (data.is_default) {
+            form.indikator_deleted.push(data);
+        }
         if (form.indikator.length > 0){
             form.indikator.map((item,index)=>{
-                form.indikator[index].value = index;
+                form.indikator[index].index = index;
                 form.indikator[index].nomor = index + 1;
             });
         }
@@ -61,7 +70,7 @@ export default class CreateKomponen extends React.Component{
     }
     handleAddIndikator(){
         let form = this.state.form;
-        form.indikator.push({value:form.indikator.length,label:'',nomor:form.indikator.length+1});
+        form.indikator.push({index:form.indikator.length,value:null,label:'',nomor:form.indikator.length+1,is_default:false});
         form.nilai_sangat_baik = form.indikator.length;
         if (form.nilai_sangat_baik > 1) form.nilai_baik = form.nilai_sangat_baik - 1;
         if (form.nilai_baik > 1) form.nilai_cukup = 1;
@@ -99,7 +108,7 @@ export default class CreateKomponen extends React.Component{
         }
         this.setState({form});
     }
-    async submitCreateKomponen(e){
+    async submitUpdateKomponen(e){
         e.preventDefault();
         let button = this.state.button;
         button.submit.disabled = true;
@@ -109,14 +118,14 @@ export default class CreateKomponen extends React.Component{
         try {
             let response = await saveKomponenKeterampilan(this.props.token,this.state.form);
             if (response.data.params === null) {
-                showErrorMessage(response.data.message,'modal-create');
+                showErrorMessage(response.data.message,'modal-update');
             } else {
                 this.props.handleUpdate(response.data.params);
                 this.props.handleClose();
                 showSuccessMessage(response.data.message);
             }
         } catch (er) {
-            showErrorMessage(er.response.data.message,'modal-create');
+            showErrorMessage(er.response.data.message,'modal-update');
         }
         button.submit.disabled = false;
         button.submit.icon = <i className="fas fa-save"/>;
@@ -131,11 +140,11 @@ export default class CreateKomponen extends React.Component{
         ];
         return (
             <Dialog
-                id="modal-create" fullWidth maxWidth="lg"
+                id="modal-update" fullWidth maxWidth="lg"
                 open={this.props.open}
-                onClose={this.state.button.submit.disabled ? null : this.props.handleClose}
+                onClose={()=>this.state.button.submit.disabled ? null : this.props.handleClose(null)}
                 scroll="body">
-                <form onSubmit={this.submitCreateKomponen}>
+                <form onSubmit={this.submitUpdateKomponen}>
                     <DialogTitle id="scroll-dialog-title">Form Komponen Keterampilan</DialogTitle>
                     <DialogContent dividers={true}>
                         <div className="form-group row">
@@ -209,7 +218,7 @@ export default class CreateKomponen extends React.Component{
                     <DialogActions>
                         <button onClick={this.handleAddIndikator} disabled={this.state.button.submit.disabled} type="button" className="btn btn-primary"><i className="fas fa-plus-circle"/> Tambah Indikator</button>
                         <button disabled={this.state.button.submit.disabled} type="submit" className="btn btn-primary">{this.state.button.submit.icon} {this.state.button.submit.text}</button>
-                        <button onClick={this.state.button.submit.disabled ? null : this.props.handleClose } disabled={this.state.button.submit.disabled} type="button" className="btn btn-secondary"><i className="fas fa-times"/> Tutup</button>
+                        <button onClick={()=>this.state.button.submit.disabled ? null : this.props.handleClose(null) } disabled={this.state.button.submit.disabled} type="button" className="btn btn-secondary"><i className="fas fa-times"/> Tutup</button>
                     </DialogActions>
                 </form>
             </Dialog>

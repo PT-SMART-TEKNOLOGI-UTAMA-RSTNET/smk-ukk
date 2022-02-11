@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
 import Axios from 'axios';
+import Select from 'react-select'
 
 import {compactGrid} from '../../../../Components/DataTableStyles';
 import {showErrorMessage, showSuccessMessage} from "../../../../Components/Alerts";
@@ -10,12 +11,13 @@ import MainHeader from "../../../../Components/Layouts/MainHeader";
 import MainSideBar from "../../../../Components/Layouts/MainSideBar";
 import MainFooter from "../../../../Components/Layouts/MainFooter";
 import BreadCrumbs from "../../../../Components/Layouts/BreadCrumbs";
-import {komponenOptions} from "../../../../Components/KomponenOptions";
+import {komponenOptions,pengujiTypeOptions} from "../../../../Components/KomponenOptions";
 
 import {currentUser} from "../../../../Services/AuthService";
 import {getPackages} from "../../../../Services/Master/PackageService";
 import CreateKomponen from "./Modals/CreateKomponen";
 import IndikatorTable from "./IndikatorTable";
+import UpdateKomponen from "./Modals/UpdateKomponen";
 
 export default class KeterampilanPage extends React.Component{
     constructor(props){
@@ -25,18 +27,38 @@ export default class KeterampilanPage extends React.Component{
             current_user : null, breadcrumbs : [
                 { label : 'Paket Soal', url : window.origin + '/master/packages' }
             ], loading : false,
-            form : {}, current_package : null, komponent_keterampilan : [],
+            form : {
+                komponen : null, penguji : null
+            },
+            current_package : null, komponent_keterampilan : [],
             modals : {
                 create : { open : false, data : null },
-                update : { open : false, data : null }
+                update : { open : false, data : null, komponen_data : null }
             }
         };
         this.loadMe = this.loadMe.bind(this);
+        this.handleSelect = this.handleSelect.bind(this);
         this.loadPackages = this.loadPackages.bind(this);
         this.toggleCreate = this.toggleCreate.bind(this);
+        this.toggleUpdate = this.toggleUpdate.bind(this);
+        this.renderNomor = this.renderNomor.bind(this);
+        this.confirmDelete = this.confirmDelete.bind(this);
     }
     componentDidMount(){
         this.loadMe();
+    }
+    handleSelect(e,formName){
+        let form = this.state.form;
+        form[formName] = e;
+        this.setState({form});
+        this.loadPackages();
+    }
+    toggleUpdate(data){
+        let modals = this.state.modals;
+        modals.update.open = ! this.state.modals.update.open;
+        modals.update.data = this.state.current_package;
+        if (typeof data !== 'undefined') modals.update.komponen_data = data;
+        this.setState({data});
     }
     toggleCreate(){
         let modals = this.state.modals;
@@ -62,6 +84,12 @@ export default class KeterampilanPage extends React.Component{
                         let komponent_keterampilan = [];
                         if (current_package.meta.komponen.keterampilan.length > 0){
                             komponent_keterampilan = current_package.meta.komponen.keterampilan;
+                            if (this.state.form.komponen !== null){
+                                komponent_keterampilan = komponent_keterampilan.filter((i) => i.meta.komponen === this.state.form.komponen.value);
+                            }
+                            if (this.state.form.penguji !== null) {
+                                komponent_keterampilan = komponent_keterampilan.filter((i) => i.meta.type === this.state.form.penguji.value);
+                            }
                         }
                         this.setState({current_package,komponent_keterampilan});
                     }
@@ -91,20 +119,72 @@ export default class KeterampilanPage extends React.Component{
         this.setState({loading:false});
         this.loadPackages();
     }
+    confirmDelete(data){
+        let message = 'Anda yakin ingin menghapus Komponen Keterampilan <b>' + data.label + '</b>?';
+        let formData = new FormData();
+        formData.append('_method','delete');
+        formData.append('id', data.value);
+        Swal.fire({
+            title: "Perhatian !", html: message, icon: "question", showCancelButton: true, confirmButtonColor: "#FF9800",
+            confirmButtonText: "Hapus", cancelButtonText: "Batalkan", cancelButtonColor: '#ddd', closeOnConfirm : false,
+            showLoaderOnConfirm: true, allowOutsideClick: () => ! Swal.isLoading(), allowEscapeKey : () => ! Swal.isLoading(),
+            preConfirm : (e)=> {
+                return Promise.resolve(Axios({headers : { "Authorization" : "Bearer " + this.state.token }, method : 'post', data : formData, url : window.origin + '/api/auth/master/packages/komponen/keterampilan'}))
+                    .then((response) => {
+                        if (response.status !== 200){
+                            Swal.showValidationMessage(response.data.message, true);
+                            Swal.hideLoading();
+                        } else if (response.data.params === null){
+                            Swal.showValidationMessage(response.data.message, true);
+                            Swal.hideLoading();
+                        } else {
+                            Swal.close();
+                            this.loadPackages();
+                            showSuccessMessage(response.data.message);
+                        }
+                    }).catch((error)=>{
+                        Swal.showValidationMessage(error.response.data.message,true);
+                    });
+            }
+        });
+    }
+    renderNomor(data){
+        let nomor = '';
+        switch (data.meta.komponen){
+            case 'persiapan' : nomor = '1.'; break;
+            case 'pelaksanaan' : nomor = '2.'; break;
+            case 'hasil' : nomor = '3.'; break;
+        }
+        return nomor + data.meta.nomor;
+    }
     render(){
         const columns = [
-            { name : '#', selector : row => row.meta.nomor, sortable : true, width : '70px', center : true },
-            { name : 'Komponen', selector : row => row.meta.komponen, sortable : true, width : '150px' },
-            { name : 'Sub Komponen', selector : row => row.label, sortable : true },
+            { name : '#', selector : row => this.renderNomor(row), sortable : true, width : '70px', center : true },
+            { name : 'Komponen', selector : row => row.meta.komponen, sortable : true, width : '120px' },
+            { name : 'Sub Komponen', selector : row => row.label, sortable : true, wrap: true },
+            { name : 'Penguji', selector : row => row.meta.type, width : '100px', center : true, sortable : true },
             { name : 'SB', selector : row => row.meta.nilai.sb, sortable : true, width : '70px', center : true },
             { name : 'B', selector : row => row.meta.nilai.b, sortable : true, width : '70px', center : true },
             { name : 'C', selector : row => row.meta.nilai.c, sortable : true, width : '70px', center : true },
             { name : 'T', selector : row => row.meta.nilai.t, sortable : true, width : '70px', center : true },
+            { name : '', grow : 0, center : true, cell : row =>
+                    <>
+                        <button onClick={()=>this.toggleUpdate(row)} className="btn btn-flat btn-outline-secondary btn-xs mr-1" type="button"><i className="fas fa-pen"/></button>
+                        <button onClick={()=>this.confirmDelete(row)} className="btn btn-flat btn-outline-danger btn-xs" type="button"><i className="fas fa-trash-alt"/></button>
+                    </>
+            },
         ];
         const indikatorTable = ({data}) => <IndikatorTable data={data.meta.indikator}/>
         return (
             <>
 
+                <UpdateKomponen
+                    komponen_data={this.state.modals.update.komponen_data}
+                    data={this.state.modals.update.data}
+                    handleUpdate={this.loadPackages}
+                    handleClose={this.toggleUpdate}
+                    open={this.state.modals.update.open}
+                    token={this.state.token}/>
                 <CreateKomponen
                     data={this.state.modals.create.data}
                     handleUpdate={this.loadPackages}
@@ -120,7 +200,10 @@ export default class KeterampilanPage extends React.Component{
                     <section className="content">
                         <div className="card">
                             <div className="card-header">
-                                <h3 className="card-title"/>
+                                <div className="float-left">
+                                    <Select value={this.state.form.komponen} className="mb-2 float-left mr-2" onChange={(e)=>this.handleSelect(e,'komponen')} isClearable isLoading={this.state.loading} disabled={this.state.loading} options={komponenOptions}/>
+                                    <Select value={this.state.form.penguji} className="mb-2 float-left" onChange={(e)=>this.handleSelect(e,'penguji')} isClearable isLoading={this.state.loading} disabled={this.state.loading} options={pengujiTypeOptions}/>
+                                </div>
                                 <div className="card-tools">
                                     <button disabled={this.state.loading} onClick={this.toggleCreate} className="btn btn-primary btn-sm mr-1" title="Tambah Data">
                                         <i className="fas fa-plus-circle"/> Tambah Data

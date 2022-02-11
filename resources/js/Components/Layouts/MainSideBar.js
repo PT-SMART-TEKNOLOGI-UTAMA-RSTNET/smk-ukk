@@ -53,7 +53,7 @@ export default class MainSideBar extends React.Component{
     render(){
         return (
             <aside className="main-sidebar sidebar-dark-primary elevation-4">
-                <a href={window.origin} className="brand-link">
+                <a href={window.origin} className="brand-link text-sm">
                     <img src={window.origin+'/uploads/images/logo.png'} className="brand-image img-circle elevation-3" style={{opacity: .8}}/>
                     <span className="brand-text font-weight-light">UJI KOMPETENSI</span>
                 </a>

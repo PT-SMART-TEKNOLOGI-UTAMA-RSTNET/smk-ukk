@@ -13,6 +13,6 @@ class KeterampilanKomponen extends Model
     public $incrementing = false;
 
     public function indikatorCollection(){
-        return $this->hasMany(KeterampilanIndikator::class,'komponen','id');
+        return $this->hasMany(KeterampilanIndikator::class,'komponen','id')->orderBy('nomor','asc');
     }
 }
