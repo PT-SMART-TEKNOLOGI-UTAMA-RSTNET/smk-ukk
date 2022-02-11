@@ -16,3 +16,11 @@ export const currentUser = async (token) => {
     });
     return Promise.resolve(request);
 };
+export const allUsers = async (token,data) => {
+    let request = Axios({
+        headers : { "Authorization" : "Bearer " + token },
+        method : 'post', data : data,
+        url : window.origin + '/api/auth/users'
+    });
+    return Promise.resolve(request);
+};

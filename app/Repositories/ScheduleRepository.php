@@ -16,6 +16,12 @@ use Ramsey\Uuid\Uuid;
 
 class ScheduleRepository
 {
+    protected $pesertaRepository;
+    public function __construct()
+    {
+        $this->pesertaRepository = new PesertaRepository();
+    }
+
     public function delete(Request $request) {
         try {
             Ujian::where('id', $request->id)->delete();
@@ -65,6 +71,7 @@ class ScheduleRepository
                     'value' => $ujian->id,
                     'label' => $ujian->name,
                     'meta' => [
+                        'tingkat' => $ujian->tingkat,
                         'keterangan' => $ujian->description,
                         'token' => [
                             'string' => $ujian->token,
@@ -76,8 +83,7 @@ class ScheduleRepository
                             'selesai' => $ujian->end_at
                         ],
                         'active' => $ujian->is_active,
-                        'peserta' => $ujian->pesertaCollection,
-
+                        'peserta' => $this->pesertaRepository->table(new Request(['ujian' => $ujian->id])),
                     ]
                 ]);
             }

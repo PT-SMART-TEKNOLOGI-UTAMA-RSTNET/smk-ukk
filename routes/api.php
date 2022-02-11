@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KomponenKeterampilanController;
 use App\Http\Controllers\KomponenSikapController;
 use App\Http\Controllers\PackagesController;
+use App\Http\Controllers\PesertaController;
 use App\Http\Controllers\ScheduleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'auth', 'middleware' => 'auth:api'],function (){
     Route::get('/me',[AuthController::class,'me']);
+    Route::any('/users',[AuthController::class,'users']);
     Route::group(['prefix' => 'master'],function (){
         Route::group(['prefix' => 'packages'],function (){
             Route::any('/',[PackagesController::class,'crud']);
@@ -31,6 +33,7 @@ Route::group(['prefix' => 'auth', 'middleware' => 'auth:api'],function (){
         });
         Route::group(['prefix' => 'schedules'],function (){
             Route::any('/',[ScheduleController::class,'crud']);
+            Route::any('/peserta',[PesertaController::class,'crud']);
         });
     });
 });

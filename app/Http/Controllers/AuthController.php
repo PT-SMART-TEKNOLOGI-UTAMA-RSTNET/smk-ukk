@@ -16,6 +16,20 @@ class AuthController extends Controller
         $this->repository = new AuthRepository();
     }
 
+    public function users(Request $request) {
+        try {
+            $code = 400; $message = 'Undefined Method'; $params = null;
+            switch (strtolower($request->method())){
+                case 'post' :
+                    $params = $this->repository->allUsers($request);
+                    $code = 200; $message = 'ok';
+                    break;
+            }
+            return responseFormat($code, $message, $params);
+        } catch (\Exception $exception) {
+            return responseFormat($exception->getCode(), $exception->getMessage());
+        }
+    }
     public function logout(Request $request){
         try {
             auth()->logout();

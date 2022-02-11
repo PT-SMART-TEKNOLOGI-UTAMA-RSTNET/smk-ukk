@@ -43,8 +43,12 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-    /*public function siswaObj(){
+    public function siswaObj(){
         return $this->setConnection(config('database.erapor'))
             ->belongsTo(Siswa::class,'siswa','id');
-    }*/
+    }
+    public function jurusanObj(){
+        return $this->setConnection(config('database.erapor'))
+            ->belongsTo(Jurusan::class,'jurusan','id');
+    }
 }
