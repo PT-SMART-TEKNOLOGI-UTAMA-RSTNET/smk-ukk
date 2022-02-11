@@ -25,4 +25,8 @@ Route::group(['prefix' => 'master'],function (){
         Route::get('/{packages}/keterampilan', function (){ return view('master.packages.keterampilan'); });
         Route::get('/{packages}/sikap', function (){ return view('master.packages.sikap'); });
     });
+    Route::group(['prefix' => 'schedules'],function (){
+        Route::get('/', function (){ return view('master.schedules'); });
+        Route::get('/{schedules}/peserta', function (){ return view('master.peserta'); });
+    });
 });

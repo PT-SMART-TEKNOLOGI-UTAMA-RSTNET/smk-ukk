@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KomponenKeterampilanController;
 use App\Http\Controllers\KomponenSikapController;
 use App\Http\Controllers\PackagesController;
+use App\Http\Controllers\ScheduleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,9 @@ Route::group(['prefix' => 'auth', 'middleware' => 'auth:api'],function (){
                 Route::any('/keterampilan',[KomponenKeterampilanController::class,'crud']);
                 Route::any('/sikap',[KomponenSikapController::class,'crud']);
             });
+        });
+        Route::group(['prefix' => 'schedules'],function (){
+            Route::any('/',[ScheduleController::class,'crud']);
         });
     });
 });
