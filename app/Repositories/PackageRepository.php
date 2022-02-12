@@ -28,7 +28,7 @@ class PackageRepository
     public function delete(Request $request){
         try {
             PaketSoal::where('id', $request->id)->delete();
-            return $request->all();
+            return $request->id;
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),500);
         }
