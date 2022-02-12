@@ -50,7 +50,7 @@ class Handler extends ExceptionHandler
         if($request->expectsJson()){
             return responseFormat(401,'Unauthenticated');
         }
-        return redirect()->guest('login');
+        return redirect()->route('login');
     }
 
     /* @
@@ -62,6 +62,6 @@ class Handler extends ExceptionHandler
         if($request->expectsJson()){
             return responseFormat(401,'Unauthenticated');
         }
-        return redirect()->guest('login');
+        return redirect()->route('login');
     }
 }
