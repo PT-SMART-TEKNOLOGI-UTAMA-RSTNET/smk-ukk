@@ -33,11 +33,8 @@ class AuthController extends Controller
     public function logout(Request $request){
         try {
             if (strtolower($request->method()) == 'post') {
-                if (auth()->guard('api')->check()){
-                    auth()->logout();
-                    $this->repository->logout($request);
-                }
-                return responseFormat(200,'ok','ok');
+                $params = $this->repository->logout($request);
+                return responseFormat(200,'ok',$params);
             } elseif (strtolower($request->method()) == 'get') {
                 if (auth()->check()){
                     auth()->logout();
