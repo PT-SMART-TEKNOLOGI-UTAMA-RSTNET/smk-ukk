@@ -139,11 +139,13 @@ export default class SchedulePage extends React.Component{
             { name : 'Peserta', selector : row => row.meta.peserta.length, grow : 0, center : true, cell : row =>
                     <a href={window.origin+'/master/schedules/' + row.value + '/peserta'}>{row.meta.peserta.length} peserta</a>
             },
-            { name : 'Token', selector : row => row.meta.token.expired, cell : row => <span><b style={{display:'block'}} className="text-center">{row.meta.token.string}</b><small>{row.meta.token.expired === null ? '' : moment(row.meta.token.expired).format('DD MMMM yyyy, hh:mm')}</small></span>, width : '150px', center : true, sortable : true },
+            { name : 'Tingkat', selector : row => row.meta.tingkat, width : '50px', center : true },
+            /*{ name : 'Token', selector : row => row.meta.token.expired, cell : row => <span><b style={{display:'block'}} className="text-center">{row.meta.token.string}</b><small>{row.meta.token.expired === null ? '' : moment(row.meta.token.expired).format('DD MMMM yyyy, hh:mm')}</small></span>, width : '150px', center : true, sortable : true },*/
             { name : '', grow : 0, center : true, cell : row =>
                     <>
                         <button onClick={()=>this.toggleUpdate(row)} disabled={this.state.loading} type="button" className="btn btn-outline-primary btn-flat btn-xs mr-1"><i className="fas fa-pen"/></button>
-                        <button onClick={()=>this.confirmDelete(row)} disabled={this.state.loading} type="button" className="btn btn-outline-danger btn-flat btn-xs"><i className="fas fa-trash-alt"/></button>
+                        <button onClick={()=>this.confirmDelete(row)} disabled={this.state.loading} type="button" className="btn btn-outline-danger btn-flat btn-xs mr-1"><i className="fas fa-trash-alt"/></button>
+                        <button onClick={()=> window.location.href = window.origin + '/nilai/' + row.value } disabled={this.state.loading} type="button" className="btn btn-outline-secondary btn-flat btn-xs"><i className="fas fa-check-to-slot"/></button>
                     </>
             }
         ];
@@ -167,7 +169,7 @@ export default class SchedulePage extends React.Component{
                 <MainSideBar current_user={this.state.current_user}/>
 
                 <div className="content-wrapper">
-                    <BreadCrumbs title="Dashboard" breadcrumbs={this.state.breadcrumbs}/>
+                    <BreadCrumbs title="Jadwal Ujian" breadcrumbs={this.state.breadcrumbs}/>
                     <section className="content">
                         <div className="card">
                             <div className="card-header">

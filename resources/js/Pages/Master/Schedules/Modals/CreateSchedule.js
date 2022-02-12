@@ -7,6 +7,7 @@ import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import DateTimePicker from '@mui/lab/DateTimePicker';
 import {Dialog,DialogTitle,DialogContent,DialogActions} from '@material-ui/core';
 
+import {tingkatOptions} from "../../../../Components/KomponenOptions";
 import {showErrorMessage, showSuccessMessage} from "../../../../Components/Alerts";
 import {saveSchedules} from "../../../../Services/Master/ScheduleService";
 
@@ -15,7 +16,7 @@ export default class CreateSchedule extends React.Component{
         super(props);
         this.state = {
             form : {
-                _method : 'put', jurusan : null, judul_ujian : '', keterangan_ujian : '',
+                _method : 'put', jurusan : null, judul_ujian : '', keterangan_ujian : '', tingkat : tingkatOptions[0],
                 tanggal_mulai : moment().toDate(), tanggal_selesai : moment().toDate()
             },
             button : {
@@ -53,6 +54,7 @@ export default class CreateSchedule extends React.Component{
             formData.append('keterangan_ujian', this.state.form.keterangan_ujian);
             formData.append('tanggal_mulai', moment(this.state.form.tanggal_mulai).format('yyyy-MM-DD hh:mm:ss'));
             formData.append('tanggal_selesai', moment(this.state.form.tanggal_selesai).format('yyyy-MM-DD hh:mm:ss'));
+            formData.append('tingkat', this.state.form.tingkat.value);
             try {
                 let response = await saveSchedules(this.props.token,formData);
                 if (response.data.params === null) {
@@ -88,6 +90,10 @@ export default class CreateSchedule extends React.Component{
                             <label className="col-form-label col-md-2">Jurusan</label>
                             <div className="col-md-4">
                                 <Select onChange={(e)=>this.handleSelect(e,'jurusan')} value={this.state.form.jurusan} options={this.props.jurusan}/>
+                            </div>
+                            <label className="col-form-label col-md-2">Tingkat</label>
+                            <div className="col-md-4">
+                                <Select onChange={(e)=>this.handleSelect(e,'tingkat')} value={this.state.form.tingkat} options={tingkatOptions}/>
                             </div>
                         </div>
                         <div className="form-group row">

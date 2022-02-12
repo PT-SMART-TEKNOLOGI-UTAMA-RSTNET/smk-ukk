@@ -24,3 +24,19 @@ export const savePeserta = async (token,data) => {
     });
     return Promise.resolve(request);
 };
+export const saveCapaianKeterampilan = async (token,data) => {
+    let request = Axios({
+        headers: {"Authorization": "Bearer " + token},
+        method: 'post', data: data,
+        url: window.origin + '/api/auth/nilai'
+    });
+    return Promise.resolve(request);
+};
+export const getNilai = async (token,data) => {
+    let request = Axios({
+        headers: {"Authorization": "Bearer " + token},
+        method: 'post', data: data,
+        url: window.origin + '/api/auth/nilai'
+    });
+    return Promise.resolve(request);
+};

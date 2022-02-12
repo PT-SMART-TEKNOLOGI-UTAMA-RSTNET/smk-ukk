@@ -9,6 +9,7 @@ import {Dialog,DialogTitle,DialogContent,DialogActions} from '@material-ui/core'
 
 import {showErrorMessage, showSuccessMessage} from "../../../../Components/Alerts";
 import {saveSchedules} from "../../../../Services/Master/ScheduleService";
+import {tingkatOptions} from "../../../../Components/KomponenOptions";
 
 export default class UpdateSchedule extends React.Component{
     constructor(props){
@@ -16,7 +17,7 @@ export default class UpdateSchedule extends React.Component{
         this.state = {
             form : {
                 _method : 'put', id : '', jurusan : null, judul_ujian : '', keterangan_ujian : '',
-                tanggal_mulai : moment().toDate(), tanggal_selesai : moment().toDate()
+                tanggal_mulai : moment().toDate(), tanggal_selesai : moment().toDate(), tingkat : tingkatOptions[0],
             },
             button : {
                 submit : {
@@ -36,6 +37,10 @@ export default class UpdateSchedule extends React.Component{
                 form.keterangan_ujian = props.data.meta.keterangan,
                 form.tanggal_mulai = moment(props.data.meta.tanggal.mulai).toDate(),
                 form.tanggal_selesai = moment(props.data.meta.tanggal.selesai).toDate();
+            let indexTingkat = tingkatOptions.findIndex((e) => e.value === props.data.meta.tingkat,0);
+            if (indexTingkat >= 0) {
+                form.tingkat = tingkatOptions[indexTingkat];
+            }
             let indexJurusan = props.jurusan.findIndex((e) => e.value === props.data.meta.jurusan.id,0);
             if (indexJurusan >= 0) {
                 form.jurusan = props.jurusan[indexJurusan];
@@ -69,6 +74,7 @@ export default class UpdateSchedule extends React.Component{
             formData.append('keterangan_ujian', this.state.form.keterangan_ujian);
             formData.append('tanggal_mulai', moment(this.state.form.tanggal_mulai).format('yyyy-MM-DD hh:mm:ss'));
             formData.append('tanggal_selesai', moment(this.state.form.tanggal_selesai).format('yyyy-MM-DD hh:mm:ss'));
+            formData.append('tingkat', this.state.form.tingkat.value);
             try {
                 let response = await saveSchedules(this.props.token,formData);
                 if (response.data.params === null) {
@@ -104,6 +110,10 @@ export default class UpdateSchedule extends React.Component{
                             <label className="col-form-label col-md-2">Jurusan</label>
                             <div className="col-md-4">
                                 <Select onChange={(e)=>this.handleSelect(e,'jurusan')} value={this.state.form.jurusan} options={this.props.jurusan}/>
+                            </div>
+                            <label className="col-form-label col-md-2">Tingkat</label>
+                            <div className="col-md-4">
+                                <Select onChange={(e)=>this.handleSelect(e,'tingkat')} value={this.state.form.tingkat} options={tingkatOptions}/>
                             </div>
                         </div>
                         <div className="form-group row">

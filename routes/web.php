@@ -30,3 +30,5 @@ Route::group(['prefix' => 'master'],function (){
         Route::get('/{schedules}/peserta', function (){ return view('master.peserta'); });
     });
 });
+Route::get('/nilai/{schedules}',function (){ return view('nilai'); });
+Route::get('/mulai-ujian/{schedules}', function(){ return view('mulai-ujian'); });

@@ -89,9 +89,11 @@ class KeterampilanRepository
     public function table(Request $request){
         try {
             $response = collect([]);
-            $keterampilans = KeterampilanKomponen::orderBy('komponen','desc')
+            $keterampilans = KeterampilanKomponen::orderBy('nomor','asc')
                 ->where('paket', $request->paket);
             if (strlen($request->id) > 0) $keterampilans = $keterampilans->where('id', $request->id);
+            if (strlen($request->paket) > 0) $keterampilans = $keterampilans->where('paket', $request->paket);
+            if (strlen($request->komponen) > 0) $keterampilans = $keterampilans->where('komponen', $request->komponen);
             $keterampilans = $keterampilans->get();
             foreach ($keterampilans as $keterampilan){
                 $response->push([
@@ -112,13 +114,6 @@ class KeterampilanRepository
                 ]);
             }
             return $response;
-        } catch (\Exception $exception) {
-            throw new \Exception($exception->getMessage(),500);
-        }
-    }
-    private function tableIndikator(KeterampilanKomponen $komponen){
-        try {
-
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),500);
         }

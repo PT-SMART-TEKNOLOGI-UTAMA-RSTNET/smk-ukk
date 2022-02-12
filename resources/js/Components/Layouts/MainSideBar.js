@@ -38,7 +38,6 @@ export default class MainSideBar extends React.Component{
                 menus = [
                     { value : 'Paket Soal', icon : 'fa-boxes-stacked', url : window.origin + '/master/packages', route_name : 'packages', childrens : [] },
                     { value : 'Jadwal Ujian', icon : 'fa-calendar-check', url : window.origin + '/master/schedules', route_name : 'schedules', childrens : [] },
-                    { value : 'Nilai Ujian', icon : 'fa-clipboard-check', url : window.origin + '/nilai', route_name : 'nilai', childrens : [] },
                     /*{ value : 'Nilai', icon : 'fa-tasks', url : window.origin + '', route_name : 'configs', childrens : [
                             { value : 'Data Nilai', icon : 'fa-blender-phone', url : window.origin + '/nilai', route_name : 'configs/app' },
                         ] }*/

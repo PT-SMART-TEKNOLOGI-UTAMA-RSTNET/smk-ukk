@@ -7,3 +7,8 @@ export const pengujiTypeOptions = [
     { value : 'internal', label : 'Penguji Internal' },
     { value : 'external', label : 'Penguji External' }
 ];
+export const tingkatOptions = [
+    { value : 10, label : 'Tingkat 10' },
+    { value : 11, label : 'Tingkat 11' },
+    { value : 12, label : 'Tingkat 12' }
+];

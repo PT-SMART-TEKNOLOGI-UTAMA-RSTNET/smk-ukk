@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KomponenKeterampilanController;
 use App\Http\Controllers\KomponenSikapController;
+use App\Http\Controllers\NilaiController;
 use App\Http\Controllers\PackagesController;
 use App\Http\Controllers\PesertaController;
 use App\Http\Controllers\ScheduleController;
@@ -36,4 +37,5 @@ Route::group(['prefix' => 'auth', 'middleware' => 'auth:api'],function (){
             Route::any('/peserta',[PesertaController::class,'crud']);
         });
     });
+    Route::any('/nilai',[NilaiController::class,'crud']);
 });

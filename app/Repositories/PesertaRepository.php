@@ -9,8 +9,11 @@
 namespace App\Repositories;
 
 
+use App\Models\CapaianKeterampilan;
+use App\Models\KeterampilanKomponen;
 use App\Models\Peserta;
 use App\Models\Ujian;
+use App\Repositories\Komponen\KeterampilanRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -18,6 +21,12 @@ use Ramsey\Uuid\Uuid;
 
 class PesertaRepository
 {
+    protected $komponenKeterampilanRepository;
+    public function __construct()
+    {
+        $this->komponenKeterampilanRepository = new KeterampilanRepository();
+    }
+
     private function generateNopes(Ujian $ujian){
         try {
             $number = Peserta::where('ujian', $ujian->id)->orderBy('nopes','desc')->limit(1)->get('nopes');
@@ -65,6 +74,38 @@ class PesertaRepository
             throw new \Exception($exception->getMessage(),500);
         }
     }
+    private function pesertaKeterampilan(Peserta $peserta){
+        try {
+            $response = collect([]);
+            $persiapan = $this->komponenKeterampilanRepository->table(new Request(['paket' => $peserta->paket,'komponen' => 'persiapan']));
+            foreach ($persiapan as $item){
+                foreach ($item['meta']['indikator'] as $index => $indikator){
+                    $item['meta']['indikator'][$index]->capaian = CapaianKeterampilan::where('indikator', $indikator->id)
+                        ->where('peserta', $peserta->id)->where('ujian', $peserta->ujian)->first();
+                }
+                $response->push($item);
+            }
+            $pelaksanaan = $this->komponenKeterampilanRepository->table(new Request(['paket' => $peserta->paket,'komponen' => 'pelaksanaan']));
+            foreach ($pelaksanaan as $item){
+                foreach ($item['meta']['indikator'] as $index => $indikator){
+                    $item['meta']['indikator'][$index]->capaian = CapaianKeterampilan::where('indikator', $indikator->id)
+                        ->where('peserta', $peserta->id)->where('ujian', $peserta->ujian)->first();
+                }
+                $response->push($item);
+            }
+            $hasil = $this->komponenKeterampilanRepository->table(new Request(['paket' => $peserta->paket,'komponen' => 'hasil']));
+            foreach ($hasil as $item){
+                foreach ($item['meta']['indikator'] as $index => $indikator){
+                    $item['meta']['indikator'][$index]->capaian = CapaianKeterampilan::where('indikator', $indikator->id)
+                        ->where('peserta', $peserta->id)->where('ujian', $peserta->ujian)->first();
+                }
+                $response->push($item);
+            }
+            return $response;
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),500);
+        }
+    }
     public function table(Request $request) {
         try {
             $response = collect([]);
@@ -74,6 +115,9 @@ class PesertaRepository
             $pesertas = $pesertas->get();
             foreach ($pesertas as $peserta){
                 $user = $peserta->userObj;
+                $paket = $peserta->paketObj;
+                $paket->komponen = new \StdClass();
+                $paket->komponen->keterampilan = $this->pesertaKeterampilan($peserta);
                 $response->push([
                     'value' => $peserta->id,
                     'label' => $user->name,
@@ -88,7 +132,7 @@ class PesertaRepository
                             'internal' => $peserta->internalObj,
                             'external' => $peserta->externalObj
                         ],
-                        'paket' => $peserta->paketObj
+                        'paket' => $paket
                     ]
                 ]);
             }
