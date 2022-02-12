@@ -32,8 +32,17 @@ class AuthController extends Controller
     }
     public function logout(Request $request){
         try {
-            auth()->logout();
-            return redirect(route('login'));
+            if (strtolower($request->method()) == 'post') {
+                if (auth()->guard('api')->check()){
+                    auth()->guard('api')->logout();
+                }
+                return responseFormat(200,'ok','ok');
+            } elseif (strtolower($request->method()) == 'get') {
+                if (auth()->check()){
+                    auth()->logout();
+                }
+                return redirect(route('login'));
+            }
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),500);
         }

@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login',[AuthController::class,'login']);
 Route::group(['prefix' => 'auth', 'middleware' => 'auth:api'],function (){
     Route::get('/me',[AuthController::class,'me']);
+    Route::post('/logout',[AuthController::class,'logout']);
     Route::any('/users',[AuthController::class,'users']);
     Route::group(['prefix' => 'master'],function (){
         Route::group(['prefix' => 'packages'],function (){
