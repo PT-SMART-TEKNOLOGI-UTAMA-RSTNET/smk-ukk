@@ -10,6 +10,7 @@ namespace App\Repositories;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Laravolt\Avatar\Avatar;
 
@@ -40,6 +41,14 @@ class AuthRepository
                 ]);
             }
             return $response;
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),500);
+        }
+    }
+    public function logout(Request $request){
+        try {
+            DB::table('oauth_access_tokens')->where('user_id', auth()->guard('api')->user()->id)->delete();
+            return 'ok';
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),500);
         }
