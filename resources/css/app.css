@@ -1,5 +1,6 @@
 /*@import "../../node_modules/admin-lte/plugins/fontawesome-free/css/all.css";*/
 @import "../../node_modules/@fortawesome/fontawesome-free/css/all.css";
+@import "../../node_modules/suneditor/dist/css/suneditor.min.css";
 @import "~admin-lte";
 
 .colored-toast.swal2-icon-success {

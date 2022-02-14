@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KomponenKeterampilanController;
+use App\Http\Controllers\KomponenPengetahuanController;
 use App\Http\Controllers\KomponenSikapController;
 use App\Http\Controllers\NilaiController;
 use App\Http\Controllers\PackagesController;
@@ -30,6 +31,10 @@ Route::group(['prefix' => 'auth', 'middleware' => 'auth:api'],function (){
             Route::any('/',[PackagesController::class,'crud']);
             Route::group(['prefix' => 'komponen'],function (){
                 Route::any('/keterampilan',[KomponenKeterampilanController::class,'crud']);
+                Route::group(['prefix' => 'pengetahuan'],function (){
+                    Route::any('/',[KomponenPengetahuanController::class,'crud']);
+                    Route::any('/soal',[KomponenPengetahuanController::class,'soal']);
+                });
                 Route::any('/sikap',[KomponenSikapController::class,'crud']);
             });
         });

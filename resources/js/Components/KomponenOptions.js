@@ -12,3 +12,7 @@ export const tingkatOptions = [
     { value : 11, label : 'Tingkat 11' },
     { value : 12, label : 'Tingkat 12' }
 ];
+export const jenisSoalOptions = [
+    { value : 'pg', label : 'Pilihan Ganda' },
+    { value : 'essay', label : 'Isian' },
+];

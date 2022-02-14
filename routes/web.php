@@ -22,6 +22,7 @@ Route::get('/',function (){ return view('home'); });
 Route::group(['prefix' => 'master'],function (){
     Route::group(['prefix' => 'packages'],function (){
         Route::get('/',function (){ return view('master.packages'); });
+        Route::get('/{packages}/pengetahuan',function (){ return view('master.packages.pengetahuan'); });
         Route::get('/{packages}/keterampilan', function (){ return view('master.packages.keterampilan'); });
         Route::get('/{packages}/sikap', function (){ return view('master.packages.sikap'); });
     });

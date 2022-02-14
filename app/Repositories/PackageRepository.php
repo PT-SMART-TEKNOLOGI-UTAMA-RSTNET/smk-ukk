@@ -11,6 +11,7 @@ namespace App\Repositories;
 
 use App\Models\PaketSoal;
 use App\Repositories\Komponen\KeterampilanRepository;
+use App\Repositories\Komponen\PengetahuanRepository;
 use App\Repositories\Komponen\SikapRepository;
 use Illuminate\Http\Request;
 use Ramsey\Uuid\Uuid;
@@ -18,9 +19,11 @@ use Ramsey\Uuid\Uuid;
 class PackageRepository
 {
     protected $keterampilanRepository;
+    protected $pengetahuanRepository;
     protected $sikapRepository;
     public function __construct()
     {
+        $this->pengetahuanRepository = new PengetahuanRepository();
         $this->keterampilanRepository = new KeterampilanRepository();
         $this->sikapRepository = new SikapRepository();
     }
@@ -78,6 +81,7 @@ class PackageRepository
                         'jurusan' => $package->jurusanObj,
                         'eng' => $package->name_eng,
                         'komponen' => [
+                            'pengetahuan' => $this->pengetahuanRepository->table(new Request(['paket' => $package->id])),
                             'keterampilan' => $this->keterampilanRepository->table(new Request(['paket' => $package->id])),
                             'sikap' => $this->sikapRepository->table(new Request(['paket' => $package->id])),
                         ]
