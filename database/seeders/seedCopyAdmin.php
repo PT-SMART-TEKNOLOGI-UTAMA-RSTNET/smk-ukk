@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Ramsey\Uuid\Uuid;
 
 class seedCopyAdmin extends Seeder
@@ -16,6 +17,17 @@ class seedCopyAdmin extends Seeder
      */
     public function run()
     {
+        $currentAdmin = User::where('email', 'admin@ujikom.com')->get();
+        if ($currentAdmin->count() === 0) {
+            $user = new User();
+            $user->id = Uuid::uuid4()->toString();
+            $user->name = 'administrator ujikom';
+            $user->email = 'admin@ujikom.com';
+            $user->password = Hash::make('admin@ujikom.com');
+            $user->user_type = 'guru';
+            $user->penguji_type = 'external';
+            $user->saveOrFail();
+        }
         $defaultUsers = DB::connection(config('database.erapor'))->table('users')->whereIn('level',['admin','guru','siswa'])->orderBy('level','asc')->get();
         if ($defaultUsers->count() > 0){
             $this->command->getOutput()->progressStart($defaultUsers->count());
