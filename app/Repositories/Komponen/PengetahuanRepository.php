@@ -19,7 +19,7 @@ class PengetahuanRepository
 {
     public function jawab(Request $request){
         try {
-            $komponen = PengetahuanKomponen::where('id', $request->id)->first();
+            $komponen = PengetahuanKomponen::where('id', $request->komponen)->first();
             $capaian = CapaianPengetahuan::where('ujian', $request->ujian)
                 ->where('komponen', $request->komponen)
                 ->where('peserta', $request->peserta)
@@ -36,7 +36,6 @@ class PengetahuanRepository
             $capaian->indikator = $request->indikator;
             $capaian->nilai = $capaian->indikator == $komponen->answer ? 1 : 0;
             $capaian->saveOrFail();
-            return $capaian;
             return $this->table(new Request(['id' => $capaian->komponen, 'peserta' => $request->peserta, 'ujian' => $request->ujian]));
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),500);
