@@ -36,6 +36,7 @@ class PengetahuanRepository
             $capaian->indikator = $request->indikator;
             $capaian->nilai = $capaian->indikator == $komponen->answer ? 1 : 0;
             $capaian->saveOrFail();
+            return $capaian;
             return $this->table(new Request(['id' => $capaian->komponen, 'peserta' => $request->peserta, 'ujian' => $request->ujian]));
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),500);
