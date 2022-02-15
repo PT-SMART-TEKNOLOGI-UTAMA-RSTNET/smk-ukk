@@ -33,8 +33,13 @@ class PengetahuanRepository
             } else {
                 $capaian = $capaian->first();
             }
+            $capaian->answer_content = $request->isi_jawaban;
             $capaian->indikator = $request->indikator;
-            $capaian->nilai = $capaian->indikator == $komponen->answer ? 1 : 0;
+            if ($komponen->type == 'pg') {
+                $capaian->nilai = $capaian->indikator == $komponen->answer ? 1 : 0;
+            } else {
+                $capaian->nilai = 0;
+            }
             $capaian->saveOrFail();
             return $this->table(new Request(['id' => $capaian->komponen, 'peserta' => $request->peserta, 'ujian' => $request->ujian]));
         } catch (\Exception $exception) {

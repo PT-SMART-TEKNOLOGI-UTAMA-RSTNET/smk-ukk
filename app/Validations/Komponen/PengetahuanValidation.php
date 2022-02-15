@@ -21,6 +21,7 @@ class PengetahuanValidation
                 'peserta' => 'required|string|min:10|exists:pesertas,id',
                 'komponen' => 'required|string|min:10|exists:pengetahuan_komponens,id',
                 'indikator' => 'required|string|min:10|exists:pengetahuan_indikators,id',
+                'isi_jawaban' => 'nullable'
             ]);
             if ($valid->fails()) throw new \Exception(collect($valid->errors()->all())->join("<br>"),400);
             return $request;
