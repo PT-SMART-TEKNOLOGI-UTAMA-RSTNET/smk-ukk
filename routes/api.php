@@ -22,6 +22,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::post('/login',[AuthController::class,'login']);
+Route::get('/check-connection',function (){
+    return responseFormat(200,'ok','ok');
+});
 Route::group(['prefix' => 'auth', 'middleware' => 'auth:api'],function (){
     Route::get('/me',[AuthController::class,'me']);
     Route::post('/logout',[AuthController::class,'logout']);
