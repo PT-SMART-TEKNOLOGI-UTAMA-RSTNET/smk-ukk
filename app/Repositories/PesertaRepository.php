@@ -80,6 +80,7 @@ class PesertaRepository
             $persiapan = $this->komponenKeterampilanRepository->table(new Request(['paket' => $peserta->paket,'komponen' => 'persiapan']));
             foreach ($persiapan as $item){
                 foreach ($item['meta']['indikator'] as $index => $indikator){
+                    $item['meta']['indikator'][$index]->komponen = $indikator->komponenObj;
                     $item['meta']['indikator'][$index]->capaian = CapaianKeterampilan::where('indikator', $indikator->id)
                         ->where('peserta', $peserta->id)->where('ujian', $peserta->ujian)->first();
                 }
@@ -88,6 +89,7 @@ class PesertaRepository
             $pelaksanaan = $this->komponenKeterampilanRepository->table(new Request(['paket' => $peserta->paket,'komponen' => 'pelaksanaan']));
             foreach ($pelaksanaan as $item){
                 foreach ($item['meta']['indikator'] as $index => $indikator){
+                    $item['meta']['indikator'][$index]->komponen = $indikator->komponenObj;
                     $item['meta']['indikator'][$index]->capaian = CapaianKeterampilan::where('indikator', $indikator->id)
                         ->where('peserta', $peserta->id)->where('ujian', $peserta->ujian)->first();
                 }
@@ -96,6 +98,7 @@ class PesertaRepository
             $hasil = $this->komponenKeterampilanRepository->table(new Request(['paket' => $peserta->paket,'komponen' => 'hasil']));
             foreach ($hasil as $item){
                 foreach ($item['meta']['indikator'] as $index => $indikator){
+                    $item['meta']['indikator'][$index]->komponen = $indikator->komponenObj;
                     $item['meta']['indikator'][$index]->capaian = CapaianKeterampilan::where('indikator', $indikator->id)
                         ->where('peserta', $peserta->id)->where('ujian', $peserta->ujian)->first();
                 }

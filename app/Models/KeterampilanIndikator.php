@@ -10,5 +10,8 @@ class KeterampilanIndikator extends Model
     use HasFactory;
     protected $keyType = 'string';
     public $incrementing = false;
+    public function komponenObj(){
+        return $this->belongsTo(KeterampilanKomponen::class,'komponen','id');
+    }
 
 }
