@@ -19,8 +19,10 @@ use Ramsey\Uuid\Uuid;
 class ScheduleRepository
 {
     protected $pesertaRepository;
+    protected $jurusanRepository;
     public function __construct()
     {
+        $this->jurusanRepository = new JurusanRepository();
         $this->pesertaRepository = new PesertaRepository();
     }
 
@@ -66,19 +68,32 @@ class ScheduleRepository
     }
     public function table(Request $request) {
         try {
+            $user_agent = $request->header('user-agent');
+            $user = auth()->guard('api')->user();
             $response = collect([]);
             $is_penguji = false;
+            $dateNow = Carbon::now()->format('Y-m-d H:i:s');
             $ujians = Ujian::orderBy('start_at','desc');
             if (strlen($request->id) > 0) $ujians = $ujians->where('id', $request->id);
-            if (strlen($request->jenis_penguji) > 0 && strlen($request->id_penguji) > 0) {
-                $dateNow = Carbon::now()->format('Y-m-d H:i:s');
-                $kolom_penguji = $request->jenis_penguji == 'internal' ? 'penguji_internal' : 'penguji_external';
-                $distinctUjianId = Peserta::where($kolom_penguji, $request->id_penguji)->select('ujian')->groupBy('ujian')->get()->map(function ($data){ return $data->ujian; });
-                $ujians = $ujians->whereIn('id', $distinctUjianId)->where('start_at', '<=', $dateNow)->where('end_at', '>=', $dateNow);
-                $is_penguji = true;
+            switch ($user->user_type){
+                case 'siswa' :
+                    $distinctUjianId = Peserta::where('user', $user->id)->select('ujian')->groupBy('ujian')->get()->map(function ($data){ return $data->ujian; });
+                    $ujians = $ujians->whereIn('id', $distinctUjianId)->where('start_at', '<=', $dateNow)->where('end_at', '>=', $dateNow);
+                    break;
+                case 'guru' :
+                    $kolom_penguji = $user->penguji_type == 'internal' ? 'penguji_internal' : 'penguji_external';
+                    $distinctUjianId = Peserta::where($kolom_penguji, $user->id)->select('ujian')->groupBy('ujian')->get()->map(function ($data){ return $data->ujian; });
+                    $ujians = $ujians->whereIn('id', $distinctUjianId)->where('start_at', '<=', $dateNow)->where('end_at', '>=', $dateNow);
+                    $is_penguji = true;
+                    break;
             }
             $ujians = $ujians->get();
             foreach ($ujians as $ujian){
+                if ($user_agent == 'android'){
+                    $peserta = collect([]);
+                } else {
+                    $peserta = $this->pesertaRepository->table(new Request(['ujian' => $ujian->id]));
+                }
                 $response->push([
                     'value' => $ujian->id,
                     'label' => $ujian->name,
@@ -89,13 +104,13 @@ class ScheduleRepository
                             'string' => $ujian->token,
                             'expired' => $ujian->token_expired_at
                         ],
-                        'jurusan' => $ujian->jurusanObj,
+                        'jurusan' => $this->jurusanRepository->table(new Request(['id' => $ujian->jurusan]))->first(),
                         'tanggal' => [
                             'mulai' => $ujian->start_at,
                             'selesai' => $ujian->end_at
                         ],
                         'active' => $ujian->is_active,
-                        'peserta' => $this->pesertaRepository->table(new Request(['ujian' => $ujian->id])),
+                        'peserta' => $peserta,
                         'is_penguji' => $is_penguji
                     ]
                 ]);
