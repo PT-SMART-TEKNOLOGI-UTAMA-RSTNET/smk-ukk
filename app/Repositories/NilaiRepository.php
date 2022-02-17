@@ -20,6 +20,7 @@ class NilaiRepository
 {
     public function create(Request $request) {
         try {
+            $response = null;
             $currentUser = auth()->guard('api')->user();
             $checkCapaian = CapaianKeterampilan::where('peserta', $request->peserta)
                 ->where('indikator', $request->indikator)
@@ -37,7 +38,8 @@ class NilaiRepository
             }
             $capaian->nilai = $request->nilai == 'yes' ? 1 : 0;
             $capaian->saveOrFail();
-            return $capaian;
+            $response = ['value' => $capaian->id, 'label' => $capaian->nilai];
+            return $response;
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),500);
         }
