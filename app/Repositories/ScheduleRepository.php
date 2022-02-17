@@ -91,6 +91,9 @@ class ScheduleRepository
             foreach ($ujians as $ujian){
                 if ($user_agent == 'android'){
                     $peserta = collect([]);
+                    if ($user->user_type == 'siswa') {
+                        $peserta = $this->pesertaRepository->table(new Request(['ujian' => $ujian->id]));
+                    }
                 } else {
                     $peserta = $this->pesertaRepository->table(new Request(['ujian' => $ujian->id]));
                 }
