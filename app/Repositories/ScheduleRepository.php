@@ -92,7 +92,7 @@ class ScheduleRepository
                 if ($user_agent == 'android'){
                     $peserta = collect([]);
                     if ($user->user_type == 'siswa') {
-                        $peserta = $this->pesertaRepository->table(new Request(['ujian' => $ujian->id]));
+                        $peserta = $this->pesertaRepository->table(new Request(['ujian' => $ujian->id, 'user' => $user->id]));
                     }
                 } else {
                     $peserta = $this->pesertaRepository->table(new Request(['ujian' => $ujian->id]));

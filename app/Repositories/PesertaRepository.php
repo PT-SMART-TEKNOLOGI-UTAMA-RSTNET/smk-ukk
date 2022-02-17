@@ -278,6 +278,7 @@ class PesertaRepository
 
             $response = collect([]);
             $pesertas = Peserta::orderBy('nopes','asc');
+            if (strlen($request->user) > 0) $pesertas = $pesertas->where('user', $request->user);
             if (strlen($request->id) > 0) $pesertas = $pesertas->where('id', $request->id);
             if (strlen($request->ujian) > 0) $pesertas = $pesertas->where('ujian', $request->ujian);
             if ($user_agent == 'android'){
