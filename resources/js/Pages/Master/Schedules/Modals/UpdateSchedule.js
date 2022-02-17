@@ -41,7 +41,7 @@ export default class UpdateSchedule extends React.Component{
             if (indexTingkat >= 0) {
                 form.tingkat = tingkatOptions[indexTingkat];
             }
-            let indexJurusan = props.jurusan.findIndex((e) => e.value === props.data.meta.jurusan.id,0);
+            let indexJurusan = props.jurusan.findIndex((e) => e.value === props.data.meta.jurusan.value,0);
             if (indexJurusan >= 0) {
                 form.jurusan = props.jurusan[indexJurusan];
             }

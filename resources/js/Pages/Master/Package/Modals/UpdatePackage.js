@@ -25,7 +25,7 @@ export default class UpdatePackage extends React.Component{
         if (props.data !== null && props.jurusan !== null && props.jurusan.length > 0){
             let form = this.state.form;
             form.id = props.data.value;
-            let jurusanIndex = props.jurusan.findIndex((e) => e.value === props.data.meta.jurusan.id,0);
+            let jurusanIndex = props.jurusan.findIndex((e) => e.value === props.data.meta.jurusan.value,0);
             if (jurusanIndex >= 0) form.jurusan = props.jurusan[jurusanIndex];
             form.judul_paket_soal = props.data.label;
             form.judul_paket_soal_inggris = props.data.meta.eng;

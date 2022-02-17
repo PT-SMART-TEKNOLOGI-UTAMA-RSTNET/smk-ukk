@@ -133,7 +133,7 @@ export default class SchedulePage extends React.Component{
     render(){
         const columns = [
             { name : 'Judul Ujian', cell : row => <span><b>{row.label}</b><br/><small>{row.meta.keterangan}</small></span>, selector : row => row.label, sortable : true },
-            { name : 'Jurusan', selector : row => row.meta.jurusan.name, sortable : true, width : '120px', wrap : true },
+            { name : 'Jurusan', selector : row => row.meta.jurusan.label, sortable : true, width : '120px', wrap : true },
             { name : 'Mulai', selector : row => row.meta.tanggal.mulai, cell : row => moment(row.meta.tanggal.mulai).format('DD MMMM yyyy, hh:mm'), width : '150px', sortable : true },
             { name : 'Selesai', selector : row => row.meta.tanggal.selesai, cell : row => moment(row.meta.tanggal.selesai).format('DD MMMM yyyy, hh:mm'), width : '150px', sortable : true },
             { name : 'Peserta', selector : row => row.meta.peserta.length, grow : 0, center : true, cell : row =>

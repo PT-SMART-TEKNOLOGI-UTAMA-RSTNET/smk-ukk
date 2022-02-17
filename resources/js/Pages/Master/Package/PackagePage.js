@@ -132,7 +132,7 @@ export default class PackagePage extends React.Component{
     render(){
         const columns = [
             { name : 'Nama Paket Soal', selector : row => row.label, sortable : true },
-            { name : 'Jurusan', selector : row => row.meta.jurusan.name, sortable : true },
+            { name : 'Jurusan', selector : row => row.meta.jurusan.label, sortable : true },
             { name : 'Keterampilan', selector : row => <a href={window.origin+'/master/packages/' + row.value + '/keterampilan'}>{row.meta.komponen.keterampilan.length} Komponen</a>, sortable : true, center : true, grow : 0 },
             { name : 'Pengetahuan', selector : row => <a href={window.origin+'/master/packages/' + row.value + '/pengetahuan'}>{row.meta.komponen.pengetahuan.length} Soal</a>, sortable : true, center : true, grow : 0 },
             { name : 'Sikap', selector : row => <a href={window.origin+'/master/packages/' + row.value + '/sikap'}>{row.meta.komponen.sikap.length} Komponen</a> , sortable : true, center : true, grow : 0 },

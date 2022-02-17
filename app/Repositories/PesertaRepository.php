@@ -10,6 +10,7 @@ namespace App\Repositories;
 
 
 use App\Models\CapaianKeterampilan;
+use App\Models\KeterampilanIndikator;
 use App\Models\KeterampilanKomponen;
 use App\Models\Peserta;
 use App\Models\Ujian;
@@ -22,8 +23,12 @@ use Ramsey\Uuid\Uuid;
 class PesertaRepository
 {
     protected $komponenKeterampilanRepository;
+    protected $packageRepository;
+    protected $userRepository;
     public function __construct()
     {
+        $this->packageRepository = new PackageRepository();
+        $this->userRepository = new AuthRepository();
         $this->komponenKeterampilanRepository = new KeterampilanRepository();
     }
 
@@ -77,6 +82,35 @@ class PesertaRepository
     private function pesertaKeterampilan(Peserta $peserta){
         try {
             $response = collect([]);
+            /*$persiapan = KeterampilanKomponen::where('komponen','persiapan')->where('paket', $peserta->paket)->orderBy('nomor','asc')->get();
+            foreach ($persiapan as $item) {
+                $data = [
+                    'value' => $item->value,
+                    'label' => $item->name,
+                    'meta' => [
+                        'komponen' => $item->komponen,
+                        'penguji' => $item->penguji_type,
+                        'nomor' => $item->nomor,
+                        'nilai' => [
+                            'sb' => $item->nilai_sangat_baik,
+                            'b' => $item->nilai_baik,
+                            'c' => $item->nilai_cukup,
+                            't' => $item->nilai_tidak
+                        ],
+                        'indikator' => collect([])
+                    ]
+                ];
+                dd($data);
+                $indikators = KeterampilanIndikator::where('komponen', $item->id)->orderBy('nomor','asc')->get();
+                foreach ($indikators as $indikator){
+                    $item->indikator->push([
+                        'value' => $indikator->id,
+                        'label' => $indikator->indikator,
+                    ]);
+                }
+                $response->push($data);
+            }
+            dd($response);*/
             $persiapan = $this->komponenKeterampilanRepository->table(new Request(['paket' => $peserta->paket,'komponen' => 'persiapan']));
             foreach ($persiapan as $item){
                 foreach ($item['meta']['indikator'] as $index => $indikator){
@@ -109,33 +143,171 @@ class PesertaRepository
             throw new \Exception($exception->getMessage(),500);
         }
     }
+    private function komponenKeterampilan(Peserta $peserta, $penguji){
+        try {
+            $response = collect([]);
+            $komponens = KeterampilanKomponen::where('komponen','persiapan')->where('penguji_type', $penguji)->where('paket', $peserta->paket)->orderBy('nomor','asc')->get();
+            foreach ($komponens as $komponen){
+                $komponenIndikator = collect([]);
+                $indikators = KeterampilanIndikator::where('komponen', $komponen->id)->orderBy('nomor','asc')->get();
+                foreach ($indikators as $indikator){
+                    $capaianIndikator = null;
+                    $capaian = CapaianKeterampilan::where('indikator', $indikator->id)->where('peserta', $peserta->id)->where('ujian', $peserta->ujian)->get();
+                    if ($capaian->count() > 0) {
+                        $capaianIndikator = [
+                            'value' => $capaian->first()->id,
+                            'label' => $capaian->first()->nilai,
+                        ];
+                    }
+                    $komponenIndikator->push([
+                        'value' => $indikator->id,
+                        'label' => $indikator->indikator,
+                        'meta' => [
+                            'nomor' => $indikator->nomor,
+                            'capaian' => $capaianIndikator
+                        ]
+                    ]);
+                }
+                $response->push([
+                    'value' => $komponen->id,
+                    'label' => $komponen->name,
+                    'meta' => [
+                        'komponen' => $komponen->komponen,
+                        'nomor' => $komponen->nomor,
+                        'nilai' => [
+                            'sb' => $komponen->nilai_sangat_baik,
+                            'b' => $komponen->nilai_baik,
+                            'c' => $komponen->nilai_cukup,
+                            't' => $komponen->nilai_tidak
+                        ],
+                        'indikator' => $komponenIndikator
+                    ]
+                ]);
+            }
+            $komponens = KeterampilanKomponen::where('komponen','pelaksanaan')->where('penguji_type', $penguji)->where('paket', $peserta->paket)->orderBy('nomor','asc')->get();
+            foreach ($komponens as $komponen){
+                $komponenIndikator = collect([]);
+                $indikators = KeterampilanIndikator::where('komponen', $komponen->id)->orderBy('nomor','asc')->get();
+                foreach ($indikators as $indikator){
+                    $capaianIndikator = null;
+                    $capaian = CapaianKeterampilan::where('indikator', $indikator->id)->where('peserta', $peserta->id)->where('ujian', $peserta->ujian)->get();
+                    if ($capaian->count() > 0) {
+                        $capaianIndikator = [
+                            'value' => $capaian->first()->id,
+                            'label' => $capaian->first()->nilai,
+                        ];
+                    }
+                    $komponenIndikator->push([
+                        'value' => $indikator->id,
+                        'label' => $indikator->indikator,
+                        'meta' => [
+                            'nomor' => $indikator->nomor,
+                            'capaian' => $capaianIndikator
+                        ]
+                    ]);
+                }
+                $response->push([
+                    'value' => $komponen->id,
+                    'label' => $komponen->name,
+                    'meta' => [
+                        'komponen' => $komponen->komponen,
+                        'nomor' => $komponen->nomor,
+                        'nilai' => [
+                            'sb' => $komponen->nilai_sangat_baik,
+                            'b' => $komponen->nilai_baik,
+                            'c' => $komponen->nilai_cukup,
+                            't' => $komponen->nilai_tidak
+                        ],
+                        'indikator' => $komponenIndikator
+                    ]
+                ]);
+            }
+            $komponens = KeterampilanKomponen::where('komponen','hasil')->where('penguji_type', $penguji)->where('paket', $peserta->paket)->orderBy('nomor','asc')->get();
+            foreach ($komponens as $komponen){
+                $komponenIndikator = collect([]);
+                $indikators = KeterampilanIndikator::where('komponen', $komponen->id)->orderBy('nomor','asc')->get();
+                foreach ($indikators as $indikator){
+                    $capaianIndikator = null;
+                    $capaian = CapaianKeterampilan::where('indikator', $indikator->id)->where('peserta', $peserta->id)->where('ujian', $peserta->ujian)->get();
+                    if ($capaian->count() > 0) {
+                        $capaianIndikator = [
+                            'value' => $capaian->first()->id,
+                            'label' => $capaian->first()->nilai,
+                        ];
+                    }
+                    $komponenIndikator->push([
+                        'value' => $indikator->id,
+                        'label' => $indikator->indikator,
+                        'meta' => [
+                            'nomor' => $indikator->nomor,
+                            'capaian' => $capaianIndikator
+                        ]
+                    ]);
+                }
+                $response->push([
+                    'value' => $komponen->id,
+                    'label' => $komponen->name,
+                    'meta' => [
+                        'komponen' => $komponen->komponen,
+                        'nomor' => $komponen->nomor,
+                        'nilai' => [
+                            'sb' => $komponen->nilai_sangat_baik,
+                            'b' => $komponen->nilai_baik,
+                            'c' => $komponen->nilai_cukup,
+                            't' => $komponen->nilai_tidak
+                        ],
+                        'indikator' => $komponenIndikator
+                    ]
+                ]);
+            }
+            return $response;
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),500);
+        }
+    }
     public function table(Request $request) {
         try {
+            $user_agent = $request->header('user-agent');
+            $user = auth()->guard('api')->user();
+
             $response = collect([]);
             $pesertas = Peserta::orderBy('nopes','asc');
             if (strlen($request->id) > 0) $pesertas = $pesertas->where('id', $request->id);
             if (strlen($request->ujian) > 0) $pesertas = $pesertas->where('ujian', $request->ujian);
+            if ($user_agent == 'android'){
+                switch ($user->user_type){
+                    case 'siswa' :
+                        $pesertas = $pesertas->where('user', $user->id);
+                        break;
+                    case 'guru' :
+                        $kolom_penguji = $user->penguji_type == 'internal' ? 'penguji_internal' : 'penguji_external';
+                        $pesertas = $pesertas->where($kolom_penguji, $user->id);
+                        break;
+                }
+            }
+
             $pesertas = $pesertas->get();
             foreach ($pesertas as $peserta){
-                $user = $peserta->userObj;
-                $paket = $peserta->paketObj;
-                $paket->komponen = new \StdClass();
-                $paket->komponen->keterampilan = $this->pesertaKeterampilan($peserta);
+                $user = $this->userRepository->table(new Request(['id' => $peserta->user]))->first();
+                $internal = $this->userRepository->table(new Request(['id' => $peserta->penguji_internal]))->first();
+                $internal['meta']['komponen'] = collect([]);
+                $external = $this->userRepository->table(new Request(['id' => $peserta->penguji_external]))->first();
+                $external['meta']['komponen'] = collect([]);
+                if ($user_agent == 'android'){
+                    $internal['meta']['komponen'] = $this->komponenKeterampilan($peserta,'internal');
+                    $external['meta']['komponen'] = $this->komponenKeterampilan($peserta,'external');
+                }
                 $response->push([
                     'value' => $peserta->id,
-                    'label' => $user->name,
+                    'label' => $user['label'],
                     'meta' => [
-                        'tingkat' => $user->tingkat,
-                        'user' => $user,
-                        'nis' => $user->nis,
-                        'jurusan' => $user->jurusanObj,
-                        'rombel' => $user->rombel,
                         'nopes' => $peserta->nopes,
+                        'user' => $user,
                         'penguji' => [
-                            'internal' => $peserta->internalObj,
-                            'external' => $peserta->externalObj
+                            'internal' => $internal,
+                            'external' => $external,
                         ],
-                        'paket' => $paket
+                        'paket' => $this->packageRepository->table(new Request(['id' => $peserta->paket, 'no_komponen' => 1]))->first()
                     ]
                 ]);
             }

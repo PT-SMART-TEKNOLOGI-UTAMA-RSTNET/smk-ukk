@@ -118,16 +118,20 @@ export default class PesertaPage extends React.Component{
         let peserta = this.state.current_schedule.meta.peserta;
         peserta.map((item,index)=>{
             let pengujiInternal = null, pengujiExternal = null, paketSoal = null, siswa = null;
-            let pengujiInternalIndex = this.state.penguji.findIndex((e) => e.value === item.meta.penguji.internal.id,0);
-            let pengujiExternalIndex = this.state.penguji.findIndex((e) => e.value === item.meta.penguji.external.id,0);
-            let paketSoalIndex = this.state.paket_soal.findIndex((e) => e.value === item.meta.paket.id,0);
-            let siswaIndex = this.state.siswa.findIndex((e) => e.value === item.meta.user.id,0);
+            let pengujiInternalIndex = this.state.penguji.findIndex((e) => e.value === item.meta.penguji.internal.value,0);
+            let pengujiExternalIndex = this.state.penguji.findIndex((e) => e.value === item.meta.penguji.external.value,0);
+            let paketSoalIndex = this.state.paket_soal.findIndex((e) => e.value === item.meta.paket.value,0);
+            let siswaIndex = this.state.siswa.findIndex((e) => e.value === item.meta.user.value,0);
+            console.log(item);
             if (pengujiInternalIndex >= 0) pengujiInternal = this.state.penguji[pengujiInternalIndex];
             if (pengujiExternalIndex >= 0) pengujiExternal = this.state.penguji[pengujiExternalIndex];
             if (paketSoalIndex >= 0) paketSoal = this.state.paket_soal[paketSoalIndex];
             if (siswaIndex >= 0) siswa = this.state.siswa[siswaIndex];
             form.peserta.push({
-                index : index, value : item.value, nis : item.meta.nis, nopes : item.meta.nopes, rombel : item.meta.rombel,
+                index : index, value : item.value,
+                nis : item.meta.user.meta.kode.nis,
+                nopes : item.meta.nopes,
+                rombel : item.meta.user.meta.rombel,
                 penguji_internal : pengujiInternal, penguji_external : pengujiExternal, paket_soal : paketSoal, siswa : siswa, is_default : true,
             });
         });

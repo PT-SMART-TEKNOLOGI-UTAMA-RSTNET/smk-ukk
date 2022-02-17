@@ -16,6 +16,46 @@ use Laravolt\Avatar\Avatar;
 
 class AuthRepository
 {
+    protected $jurusanRepository;
+    public function __construct()
+    {
+        $this->jurusanRepository = new JurusanRepository();
+    }
+
+    public function table(Request $request) {
+        try {
+            $response = collect([]);
+            $users = User::orderBy('name','asc');
+            if (strlen($request->id) > 0) $users = $users->where('id', $request->id);
+            $users = $users->get();
+            foreach ($users as $user){
+                $response->push([
+                    'value' => $user->id,
+                    'label' => $user->name,
+                    'meta' => [
+                        'avatar' => (new \Laravolt\Avatar\Avatar)->create($user->name)->setTheme('colorful')->toBase64(),
+                        'email' => $user->email,
+                        'level' => $user->user_type,
+                        'rombel' => $user->rombel,
+                        'jurusan' => $this->jurusanRepository->table(new Request(['id' => $user->jurusan]))->first(),
+                        'penguji' => [
+                            'type' => $user->penguji_type,
+                            'internal' => $user->penguji_internal,
+                            'external' => $user->penguji_external
+                        ],
+                        'kode' => [
+                            'nis' => $user->nis,
+                            'nisn' => $user->nisn,
+                            'nopes' => $user->nopes
+                        ]
+                    ]
+                ]);
+            }
+            return $response;
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),500);
+        }
+    }
     public function allUsers(Request $request) {
         try {
             $response = collect([]);

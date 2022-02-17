@@ -21,8 +21,10 @@ class PackageRepository
     protected $keterampilanRepository;
     protected $pengetahuanRepository;
     protected $sikapRepository;
+    protected $jurusanRepository;
     public function __construct()
     {
+        $this->jurusanRepository = new JurusanRepository();
         $this->pengetahuanRepository = new PengetahuanRepository();
         $this->keterampilanRepository = new KeterampilanRepository();
         $this->sikapRepository = new SikapRepository();
@@ -73,18 +75,23 @@ class PackageRepository
             if (strlen($request->jurusan) > 0) $packages = $packages->where('jurusan', $request->jurusan);
             $packages = $packages->get();
             foreach ($packages as $package){
+                if ($request->no_komponen == 1){
+                    $komponen = [];
+                } else {
+                    $komponen = [
+                        'pengetahuan' => $this->pengetahuanRepository->table(new Request(['paket' => $package->id])),
+                        'keterampilan' => $this->keterampilanRepository->table(new Request(['paket' => $package->id])),
+                        'sikap' => $this->sikapRepository->table(new Request(['paket' => $package->id])),
+                    ];
+                }
                 $response->push([
                     'value' => $package->id,
                     'label' => $package->name,
                     'meta' => [
                         'keterangan' => $package->description,
-                        'jurusan' => $package->jurusanObj,
+                        'jurusan' => $this->jurusanRepository->table(new Request(['id' => $package->jurusan]))->first(),
                         'eng' => $package->name_eng,
-                        'komponen' => [
-                            'pengetahuan' => $this->pengetahuanRepository->table(new Request(['paket' => $package->id])),
-                            'keterampilan' => $this->keterampilanRepository->table(new Request(['paket' => $package->id])),
-                            'sikap' => $this->sikapRepository->table(new Request(['paket' => $package->id])),
-                        ]
+                        'komponen' => $komponen
                     ]
                 ]);
             }

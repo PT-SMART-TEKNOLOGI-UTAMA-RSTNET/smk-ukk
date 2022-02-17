@@ -19,6 +19,10 @@ class PesertaController extends Controller
         try {
             $code = 400; $message = 'Undefined Method'; $params = null;
             switch (strtolower($request->method())){
+                case 'post' :
+                    $params = $this->repository->table($request);
+                    $code = 200; $message = 'ok';
+                    break;
                 case 'put' :
                     $valid = $this->validation->create($request);
                     $params = $this->repository->create($valid);
