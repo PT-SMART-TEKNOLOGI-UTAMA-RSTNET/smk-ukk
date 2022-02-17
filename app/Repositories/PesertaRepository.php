@@ -163,6 +163,7 @@ class PesertaRepository
                         'value' => $indikator->id,
                         'label' => $indikator->indikator,
                         'meta' => [
+                            'nomor_komponen' => $komponen->nomor,
                             'komponen' => $indikator->komponen,
                             'nomor' => $indikator->nomor,
                             'capaian' => $capaianIndikator
@@ -202,6 +203,7 @@ class PesertaRepository
                         'value' => $indikator->id,
                         'label' => $indikator->indikator,
                         'meta' => [
+                            'nomor_komponen' => $komponen->nomor,
                             'komponen' => $indikator->komponen,
                             'nomor' => $indikator->nomor,
                             'capaian' => $capaianIndikator
@@ -241,6 +243,7 @@ class PesertaRepository
                         'value' => $indikator->id,
                         'label' => $indikator->indikator,
                         'meta' => [
+                            'nomor_komponen' => $komponen->nomor,
                             'komponen' => $indikator->komponen,
                             'nomor' => $indikator->nomor,
                             'capaian' => $capaianIndikator
