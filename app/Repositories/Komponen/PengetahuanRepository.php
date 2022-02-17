@@ -134,9 +134,9 @@ class PengetahuanRepository
     public function table(Request $request) {
         try {
             $response = collect([]);
-            $soals = PengetahuanKomponen::orderBy('nomor','asc');
+            $soals = PengetahuanKomponen::orderBy('nomor','asc')->where('paket', $request->paket);
             if (strlen($request->id) > 0) $soals = $soals->where('id', $request->id);
-            if (strlen($request->paket) > 0) $soals = $soals->where('paket', $request->paket);
+            //if (strlen($request->paket) > 0) $soals = $soals->where('paket', $request->paket);
             $soals = $soals->get();
             foreach ($soals as $soal){
                 $capaian = null;
