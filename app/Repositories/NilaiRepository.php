@@ -192,7 +192,12 @@ class NilaiRepository
                     ]
                 ]);
             }
-            $response->nilai['konversi'] = round( $total_capaian / $soals->count() );
+            if ($total_capaian > 0) {
+                $konversi = round($total_capaian / $soals->count);
+            } else {
+                $konversi = 0;
+            }
+            $response->nilai['konversi'] = $konversi;
             return $response;
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),500);
@@ -244,8 +249,13 @@ class NilaiRepository
                 ]);
                 $total_nilai += $capaianSikap->nilai;
             }
+            if ($total_nilai > 0) {
+                $konversi = $total_nilai / $komponenSikaps->count();
+            } else {
+                $konversi = 0;
+            }
             $response->nilai = [
-                'konversi' => $total_nilai / $komponenSikaps->count()
+                'konversi' => $konversi
             ];
             return $response;
         } catch (\Exception $exception) {
