@@ -193,7 +193,7 @@ class NilaiRepository
                 ]);
             }
             if ($total_capaian > 0) {
-                $konversi = round($total_capaian / $soals->count);
+                $konversi = round($total_capaian / $soals->count());
             } else {
                 $konversi = 0;
             }
