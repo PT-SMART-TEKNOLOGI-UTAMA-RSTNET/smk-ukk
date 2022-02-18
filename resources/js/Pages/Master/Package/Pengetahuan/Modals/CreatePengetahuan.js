@@ -12,7 +12,7 @@ export default class CreatePengetahuan extends React.Component{
         super(props);
         this.state = {
             form : {
-                _method : 'put', paket : '', isi_soal : '', jawaban : null,
+                _method : 'put', paket : '', isi_soal : '', jawaban : null, elemen_kompetensi : '',
                 pilihan_jawaban : [], deleted_jawaban : [], jenis_soal : jenisSoalOptions[0],
             },
             button : {
@@ -109,7 +109,7 @@ export default class CreatePengetahuan extends React.Component{
                 this.setState({form});
             } else {
                 form = {
-                    _method : 'put', paket : '', isi_soal : '', jawaban : null,
+                    _method : 'put', paket : '', isi_soal : '', jawaban : null, elemen_kompetensi : '',
                     pilihan_jawaban : [], deleted_jawaban : [], jenis_soal : jenisSoalOptions[0],
                 };
                 this.setState({form});
@@ -144,6 +144,12 @@ export default class CreatePengetahuan extends React.Component{
                             onChange={this.handleEditor}
                             defaultValue={this.state.form.isi_soal}/>
                         <div className="mb-3"/>
+                        <div className="form-group row">
+                            <label className="col-md-2 col-form-label">Elemen Kompetensi</label>
+                            <div className="col-md-10">
+                                <input name="elemen_kompetensi" value={this.state.form.elemen_kompetensi} onChange={this.handleInput} className="form-control"/>
+                            </div>
+                        </div>
                         <div className="form-group row">
                             <label className="col-form-label col-md-2">Jenis Soal</label>
                             <div className="col-md-4">

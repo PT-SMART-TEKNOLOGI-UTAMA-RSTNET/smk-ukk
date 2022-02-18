@@ -12,7 +12,7 @@ export default class UpdatePengetahuan extends React.Component{
         super(props);
         this.state = {
             form : {
-                _method : 'patch', id : '', paket : '', isi_soal : '', jawaban : null,
+                _method : 'patch', id : '', paket : '', isi_soal : '', jawaban : null, elemen_kompetensi : '',
                 pilihan_jawaban : [], deleted_jawaban : [], jenis_soal : jenisSoalOptions[0],
             },
             button : {
@@ -40,6 +40,7 @@ export default class UpdatePengetahuan extends React.Component{
             form.nomor = props.komponen_data.meta.nomor,
                 form.paket = props.data.value,
                 form.isi_soal = props.komponen_data.label,
+                form.elemen_kompetensi = props.komponen_data.meta.elemen_kompetensi,
                 form.jenis_soal = jenisSoalOptions[jenisSoalOptions.findIndex((e) => e.value === props.komponen_data.meta.type)],
                 form.deleted_jawaban = [],
                 form.pilihan_jawaban = [];
@@ -124,7 +125,7 @@ export default class UpdatePengetahuan extends React.Component{
                 this.setState({form});
             } else {
                 form = {
-                    _method : 'patch', paket : '', isi_soal : '', jawaban : null,
+                    _method : 'patch', paket : '', isi_soal : '', jawaban : null, elemen_kompetensi : '',
                     pilihan_jawaban : [], deleted_jawaban : [], jenis_soal : jenisSoalOptions[0],
                 };
                 this.setState({form});
@@ -161,6 +162,12 @@ export default class UpdatePengetahuan extends React.Component{
                             defaultValue={this.state.form.isi_soal}
                             onChange={this.handleEditor}/>
                         <div className="mb-3"/>
+                        <div className="form-group row">
+                            <label className="col-md-2 col-form-label">Elemen Kompetensi</label>
+                            <div className="col-md-10">
+                                <input name="elemen_kompetensi" value={this.state.form.elemen_kompetensi} onChange={this.handleInput} className="form-control"/>
+                            </div>
+                        </div>
                         <div className="form-group row">
                             <label className="col-form-label col-md-2">Jenis Soal</label>
                             <div className="col-md-4">

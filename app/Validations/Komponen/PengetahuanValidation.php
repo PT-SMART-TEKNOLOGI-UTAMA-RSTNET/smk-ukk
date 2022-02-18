@@ -45,6 +45,7 @@ class PengetahuanValidation
             $valid = Validator::make($request->all(),[
                 'id' => 'required|min:10|exists:pengetahuan_komponens,id',
                 'paket' => 'required|min:10|exists:paket_soals,id',
+                'elemen_kompetensi' => 'required|string|min:3',
                 'isi_soal' => 'required|string|min:10',
                 'jenis_soal' => 'required|array|size:2',
                 'jenis_soal.value' => 'required|string|in:pg,essay',
@@ -68,6 +69,7 @@ class PengetahuanValidation
         try {
             $valid = Validator::make($request->all(),[
                 'paket' => 'required|min:10|exists:paket_soals,id',
+                'elemen_kompetensi' => 'required|string|min:3',
                 'isi_soal' => 'required|string|min:10',
                 'jenis_soal' => 'required|array|size:2',
                 'jenis_soal.value' => 'required|string|in:pg,essay',

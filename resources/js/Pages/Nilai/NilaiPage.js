@@ -14,6 +14,7 @@ import BreadCrumbs from "../../Components/Layouts/BreadCrumbs";
 
 import {getSchedules,getNilai} from "../../Services/Master/ScheduleService";
 import DetailNilaiTable from "./DetailNilaiTable";
+import IframePrint from "../../Components/IframePrint";
 
 export default class NilaiPage extends React.Component{
     constructor(props){
@@ -24,15 +25,32 @@ export default class NilaiPage extends React.Component{
             breadcrumbs : [
                 { label : 'Paket Soal', url : window.origin + '/master/schedules' }
             ],
+            modals : {
+                printing : { open : false, data : null }
+            },
             loading : false,
             current_ujian : null, jadwal_ujian : [], peserta : []
         };
         this.loadMe = this.loadMe.bind(this);
         this.loadPeserta = this.loadPeserta.bind(this);
         this.hitungTotalNilai = this.hitungTotalNilai.bind(this);
+        this.togglePrinting = this.togglePrinting.bind(this);
+        this.handlePrinting = this.handlePrinting.bind(this);
     }
     componentDidMount(){
         this.loadMe();
+    }
+    handlePrinting(){
+        const iframe = document.getElementById('iframe-print');
+        const iframeWindow = iframe.contentWindow || iframe;
+        iframe.focus();
+        iframeWindow.print();
+    }
+    togglePrinting(data = null){
+        let modals = this.state.modals;
+        modals.printing.open = ! this.state.modals.printing.open;
+        modals.printing.data = data;
+        this.setState({modals});
     }
     async loadPeserta(){
         this.setState({loading:true,peserta:[]});
@@ -119,6 +137,9 @@ export default class NilaiPage extends React.Component{
             { name : 'K', selector : row => row.meta.nilai[1].value.nilai.konversi, center : true, width : '50px' },
             { name : 'S', selector : row => row.meta.nilai[0].value.nilai.konversi, center : true, width : '50px' },
             { name : 'NA', width : '70px', center : true, selector : row => this.hitungTotalNilai(row) },
+            { name : '', width : '70px', center : true, grow : 0,
+                cell : row => <button onClick={()=>this.togglePrinting(window.origin+'/nilai/cetak/' + row.value )} disabled={this.state.loading} className="btn btn-flat btn-outline-primary btn-block btn-sm"><i className="fas fa-print"/></button>
+            }
         ];
         return (
             <>
@@ -131,14 +152,25 @@ export default class NilaiPage extends React.Component{
                         <div className="card">
                             <div className="card-header">
                                 <div className="card-tools">
-                                    <button disabled={this.state.loading} onClick={this.loadPeserta} className="btn btn-outline-secondary">{this.state.loading ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                    {this.state.modals.printing.open ?
+                                        <>
+                                            <button onClick={this.handlePrinting} disabled={this.state.loading} className="btn btn-outline-primary btn-flat mr-1"><i className="fas fa-print"/> Cetak Dokumen</button>
+                                            <button onClick={this.togglePrinting} disabled={this.state.loading} className="btn btn-outline-warning btn-flat"><i className="fas fa-xmark"/> Tutup Cetak</button>
+                                        </>
+                                        :
+                                        <button disabled={this.state.loading} onClick={this.loadPeserta} className="btn btn-outline-secondary btn-flat">{this.state.loading ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                    }
                                 </div>
                             </div>
-                            <DataTable
-                                customStyles={compactGrid}
-                                dense={true} striped={true} columns={columns} data={this.state.peserta}
-                                expandableRows expandableRowsComponent={detailNilai}
-                                persistTableHead progressPending={this.state.loading}/>
+                            {this.state.modals.printing.open ?
+                                <IframePrint print_url={this.state.modals.printing.data}/>
+                                :
+                                <DataTable
+                                    customStyles={compactGrid}
+                                    dense={true} striped={true} columns={columns} data={this.state.peserta}
+                                    expandableRows expandableRowsComponent={detailNilai}
+                                    persistTableHead progressPending={this.state.loading}/>
+                            }
                         </div>
                     </section>
                 </div>

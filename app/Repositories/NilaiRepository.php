@@ -23,6 +23,20 @@ use Ramsey\Uuid\Uuid;
 
 class NilaiRepository
 {
+    protected $userRepository;
+    public function __construct()
+    {
+        $this->userRepository = new AuthRepository();
+    }
+
+    public function cetakLembarNilai(Request $request) {
+        try {
+            $peserta = $this->table($request)->first();
+            return $peserta;
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),500);
+        }
+    }
     public function create(Request $request) {
         try {
             $response = null;
@@ -183,6 +197,7 @@ class NilaiRepository
                     'label' => $soal->content,
                     'meta' => [
                         'nomor' => $soal->nomor,
+                        'elemen' => $soal->elemen_kompetensi,
                         'nilai' => [
                             'indikator' => $indikator,
                             'jml_indikator' => $indikator->count(),
@@ -227,10 +242,10 @@ class NilaiRepository
                     $capaianSikap->indikator = $komponenSikap->id;
                     $capaianSikap->peserta = $peserta->id;
                     $capaianSikap->ujian = $peserta->ujian;
-                    $capaianSikap->created_by = auth()->guard('api')->user()->id;
+                    if (auth()->check()) $capaianSikap->created_by = auth()->guard('api')->user()->id;
                 } else {
                     $capaianSikap = $capaianSikap->first();
-                    $capaianSikap->updated_by = auth()->guard('api')->user()->id;
+                    if (auth()->check()) $capaianSikap->updated_by = auth()->guard('api')->user()->id;
                 }
                 $capaianSikap->nilai = 100;
                 $capaianSikap->saveOrFail();
@@ -290,15 +305,21 @@ class NilaiRepository
     public function table(Request $request){
         try{
             $response = collect([]);
-            $pesertas = Peserta::where('ujian', $request->ujian)->orderBy('nopes','asc')->get();
+            $pesertas = Peserta::orderBy('nopes','asc');
+            if (strlen($request->ujian) > 0) $pesertas = $pesertas->where('ujian', $request->ujian);
+            if (strlen($request->peserta) > 0) $pesertas = $pesertas->where('id', $request->peserta);
+            $pesertas = $pesertas->get();
             foreach ($pesertas as $peserta){
                 $user = $peserta->userObj;
                 $response->push([
                     'value' => $peserta->id,
                     'label' => $user->name,
                     'meta' => [
+                        'user' => $this->userRepository->table(new Request(['id' => $peserta->user]))->first(),
                         'nopes' => $peserta->nopes,
-                        'nilai' => $this->generateNilai($peserta)
+                        'nilai' => $this->generateNilai($peserta),
+                        'paket' => $peserta->paket,
+                        'ujian' => $peserta->ujian
                     ]
                 ]);
             }

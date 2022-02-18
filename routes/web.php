@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NilaiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,5 +32,6 @@ Route::group(['prefix' => 'master'],function (){
         Route::get('/{schedules}/peserta', function (){ return view('master.peserta'); });
     });
 });
+Route::get('/nilai/cetak/{id}',[NilaiController::class,'cetakLembarNilai']);
 Route::get('/nilai/{schedules}',function (){ return view('nilai'); });
 Route::get('/mulai-ujian/{schedules}', function(){ return view('mulai-ujian'); });

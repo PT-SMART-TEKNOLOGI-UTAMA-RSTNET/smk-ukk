@@ -66,6 +66,37 @@ class ScheduleRepository
             throw new \Exception($exception->getMessage(),500);
         }
     }
+    public function minTable(Request $request) {
+        try {
+            $response = collect([]);
+            $ujians = Ujian::orderBy('name','asc');
+            if (strlen($request->id) > 0) $ujians = $ujians->where('id', $request->id);
+            $ujians = $ujians->get();
+            foreach ($ujians as $ujian){
+                $response->push([
+                    'value' => $ujian->id,
+                    'label' => $ujian->name,
+                    'meta' => [
+                        'tingkat' => $ujian->tingkat,
+                        'keterangan' => $ujian->description,
+                        'token' => [
+                            'string' => $ujian->token,
+                            'expired' => $ujian->token_expired_at
+                        ],
+                        'jurusan' => $this->jurusanRepository->table(new Request(['id' => $ujian->jurusan]))->first(),
+                        'tanggal' => [
+                            'mulai' => $ujian->start_at,
+                            'selesai' => $ujian->end_at
+                        ],
+                        'active' => $ujian->is_active,
+                    ]
+                ]);
+            }
+            return $response;
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),500);
+        }
+    }
     public function table(Request $request) {
         try {
             $user_agent = $request->header('user-agent');

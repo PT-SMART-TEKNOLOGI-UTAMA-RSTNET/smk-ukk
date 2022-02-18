@@ -59,6 +59,7 @@ class PengetahuanRepository
             $soal = PengetahuanKomponen::where('id', $request->id)->first();
             $soal->content = $request->isi_soal;
             $soal->type = $request->jenis_soal['value'];
+            $soal->elemen_kompetensi = $request->elemen_kompetensi;
             $soal->saveOrFail();
             foreach ($request->pilihan_jawaban as $inputJawaban){
                 if ($inputJawaban['is_default'] && strlen($inputJawaban['value']) > 10){
@@ -92,6 +93,7 @@ class PengetahuanRepository
             $soal->id = Uuid::uuid4()->toString();
             $soal->paket = $request->paket;
             $soal->nomor = $request->nomor;
+            $soal->elemen_kompetensi = $request->elemen_kompetensi;
             $soal->content = $request->isi_soal;
             $soal->type = $request->jenis_soal['value'];
             $soal->saveOrFail();
@@ -153,6 +155,7 @@ class PengetahuanRepository
                     'value' => $soal->id,
                     'label' => $soal->content,
                     'meta' => [
+                        'elemen_kompetensi' => $soal->elemen_kompetensi,
                         'paket' => $soal->paketObj,
                         'nomor' => $soal->nomor,
                         'type' => $soal->type,
