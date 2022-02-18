@@ -344,8 +344,14 @@
             </tr>
             <tr>
                 <td class="align-middle text-center">0</td><td class="align-middle text-center">< 61</td>
+            </tr>
+            <tr>
                 <td class="align-middle text-center">1</td><td class="align-middle text-center">61-70</td>
+            </tr>
+            <tr>
                 <td class="align-middle text-center">2</td><td class="align-middle text-center">71-85</td>
+            </tr>
+            <tr>
                 <td class="align-middle text-center">3</td><td class="align-middle text-center">86-100</td>
             </tr>
         </table>
