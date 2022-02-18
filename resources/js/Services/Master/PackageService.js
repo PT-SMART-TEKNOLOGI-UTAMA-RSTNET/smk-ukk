@@ -2,7 +2,7 @@ import Axios from 'axios';
 
 export const getPackages = async (token,data) => {
     let request = Axios({
-        headers : { "Authorization" : "Bearer " + token },
+        headers : { "Authorization" : "Bearer " + token, "Accept" : "application/json" },
         method : 'post', data : data,
         url : window.origin + '/api/auth/master/packages'
     });
@@ -10,7 +10,7 @@ export const getPackages = async (token,data) => {
 };
 export const savePackage = async (token,data) => {
     let request = Axios({
-        headers : { "Authorization" : "Bearer " + token },
+        headers : { "Authorization" : "Bearer " + token, "Accept" : "application/json" },
         method : 'post', data : data,
         url : window.origin + '/api/auth/master/packages'
     });
@@ -18,7 +18,7 @@ export const savePackage = async (token,data) => {
 };
 export const saveKomponenKeterampilan = async (token,data) => {
     let request = Axios({
-        headers : { "Authorization" : "Bearer " + token },
+        headers : { "Authorization" : "Bearer " + token, "Accept" : "application/json" },
         method : 'post', data : data,
         url : window.origin + '/api/auth/master/packages/komponen/keterampilan'
     });
@@ -26,7 +26,7 @@ export const saveKomponenKeterampilan = async (token,data) => {
 };
 export const saveKomponenPengetahuan = async (token,data) => {
     let request = Axios({
-        headers : { "Authorization" : "Bearer " + token },
+        headers : { "Authorization" : "Bearer " + token, "Accept" : "application/json" },
         method : 'post', data : data,
         url : window.origin + '/api/auth/master/packages/komponen/pengetahuan'
     });
@@ -34,7 +34,7 @@ export const saveKomponenPengetahuan = async (token,data) => {
 };
 export const saveKomponenSikap = async (token,data) => {
     let request = Axios({
-        headers : { "Authorization" : "Bearer " + token },
+        headers : { "Authorization" : "Bearer " + token, "Accept" : "application/json" },
         method : 'post', data : data,
         url : window.origin + '/api/auth/master/packages/komponen/sikap'
     });

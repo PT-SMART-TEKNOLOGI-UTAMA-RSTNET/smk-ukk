@@ -10,9 +10,14 @@ namespace App\Repositories;
 
 
 use App\Models\CapaianKeterampilan;
+use App\Models\CapaianPengetahuan;
 use App\Models\KeterampilanIndikator;
 use App\Models\KeterampilanKomponen;
+use App\Models\PengetahuanIndikator;
+use App\Models\PengetahuanKomponen;
 use App\Models\Peserta;
+use App\Models\SikapCapaian;
+use App\Models\SikapIndikator;
 use Illuminate\Http\Request;
 use Ramsey\Uuid\Uuid;
 
@@ -126,20 +131,76 @@ class NilaiRepository
             throw new \Exception($exception->getMessage(),500);
         }
     }
-    private function nilaiPengetahuan(Peserta $peserta){
+    private function nilaiSoal(Peserta $peserta){
         try {
             $response = new \StdClass();
             $response->komponen = new \StdClass();
-            $response->komponen->persiapan = collect([]);
-            $response->komponen->pelaksanaan = collect([]);
-            $response->komponen->hasil = collect([]);
-            $response->nilai = [
-                'nilai_persiapan' => 0,
-                'nilai_pelaksanaan' => 0,
-                'nilai_hasil' => 0,
-                'nilai_total' => 0,
-                'konversi' => 0
-            ];
+            $response->komponen->soal = collect([]);
+            $response->nilai = [ 'konversi' => 0 ];
+            $total_capaian = 0;
+            $soals = PengetahuanKomponen::orderBy('nomor','asc')->where('paket', $peserta->paket)->get();
+            foreach ($soals as $soal){
+                $jml_capaian = 0;
+                $indikator = collect([]);
+                $dataIndikators = PengetahuanIndikator::where('komponen', $soal->id)->orderBy('nomor', 'asc')->get();
+                foreach ($dataIndikators as $dataIndikator){
+                    $indikator->push([
+                        'value' => $dataIndikator->id,
+                        'label' => $dataIndikator->content,
+                        'meta' => [
+                            'nomor' => $dataIndikator->nomor
+                        ]
+                    ]);
+                }
+                $dataCapaian = CapaianPengetahuan::where('komponen', $soal->id)->where('peserta', $peserta->id)->where('ujian', $peserta->ujian)->get();
+                if ($dataCapaian->count() > 0) {
+                    $dataCapaian = $dataCapaian->first();
+                    if ($soal->type == 'pg'){
+                        if ($dataCapaian->indikator == $soal->answer){
+                            $dataCapaian->nilai = 100;
+                            $dataCapaian->saveOrFail();
+                        }
+                        $jml_capaian = $dataCapaian->nilai;
+                    } elseif ($soal->type == 'essay') {
+                        $explodeJawaban = explode(' ', $dataCapaian->answer_content);
+                        $capaianIndikator = PengetahuanIndikator::where('komponen', $soal->id);
+                        foreach ($explodeJawaban as $key => $item){
+                            if ($key == 0) {
+                                $capaianIndikator = $capaianIndikator->where('content', 'like', "$$item");
+                            } else {
+                                $capaianIndikator = $capaianIndikator->orWhere('content', 'like', "%$item%");
+                            }
+                        }
+                        $capaianIndikator = $capaianIndikator->get('id');
+                        $jml_capaian = ( $capaianIndikator->count() * 100 ) / $dataIndikators->count();
+                        $dataCapaian->nilai = $jml_capaian;
+                        $dataCapaian->saveOrFail();
+                    }
+                }
+                $total_capaian += $jml_capaian;
+                $response->komponen->soal->push([
+                    'value' => $soal->id,
+                    'label' => $soal->content,
+                    'meta' => [
+                        'nomor' => $soal->nomor,
+                        'nilai' => [
+                            'indikator' => $indikator,
+                            'jml_indikator' => $indikator->count(),
+                            'jml_capaian' => $jml_capaian,
+                            'nilai_akhir' => $jml_capaian
+                        ]
+                    ]
+                ]);
+            }
+            $response->nilai['konversi'] = round( $total_capaian / $soals->count() );
+            return $response;
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),500);
+        }
+    }
+    private function nilaiPengetahuan(Peserta $peserta){
+        try {
+            $response = $this->nilaiSoal($peserta);
             return $response;
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),500);
@@ -149,15 +210,42 @@ class NilaiRepository
         try {
             $response = new \StdClass();
             $response->komponen = new \StdClass();
-            $response->komponen->persiapan = collect([]);
-            $response->komponen->pelaksanaan = collect([]);
-            $response->komponen->hasil = collect([]);
+            $response->komponen->sikap = collect([]);
+            $komponenSikaps = SikapIndikator::where('paket', $peserta->paket)->orderBy('indikator','asc')->get();
+            $total_nilai = 0;
+            foreach($komponenSikaps as $index => $komponenSikap){
+                $capaianSikap = SikapCapaian::where('ujian', $peserta->ujian)->where('indikator', $komponenSikap->id)
+                    ->where('peserta', $peserta->id)->get();
+                if ($capaianSikap->count() == 0) {
+                    $capaianSikap = new SikapCapaian();
+                    $capaianSikap->id = Uuid::uuid4()->toString();
+                    $capaianSikap->indikator = $komponenSikap->id;
+                    $capaianSikap->peserta = $peserta->id;
+                    $capaianSikap->ujian = $peserta->ujian;
+                    $capaianSikap->created_by = auth()->guard('api')->user()->id;
+                } else {
+                    $capaianSikap = $capaianSikap->first();
+                    $capaianSikap->updated_by = auth()->guard('api')->user()->id;
+                }
+                $capaianSikap->nilai = 100;
+                $capaianSikap->saveOrFail();
+                $response->komponen->sikap->push([
+                    'value' => $komponenSikap->id,
+                    'label' => $komponenSikap->indikator,
+                    'meta' => [
+                        'nomor' => $index + 1,
+                        'nilai' => [
+                            'indikator' => collect([]),
+                            'jml_indikator' => 1,
+                            'jml_capaian' => 100,
+                            'nilai_akhir' => 100
+                        ]
+                    ]
+                ]);
+                $total_nilai += $capaianSikap->nilai;
+            }
             $response->nilai = [
-                'nilai_persiapan' => 0,
-                'nilai_pelaksanaan' => 0,
-                'nilai_hasil' => 0,
-                'nilai_total' => 0,
-                'konversi' => 0
+                'konversi' => $total_nilai / $komponenSikaps->count()
             ];
             return $response;
         } catch (\Exception $exception) {

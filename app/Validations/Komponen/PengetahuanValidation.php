@@ -58,7 +58,7 @@ class PengetahuanValidation
                 'deleted_jawaban.*.value' => 'required|string|min:10|exists:pengetahuan_indikators,id'
             ]);
             if ($valid->fails()) throw new \Exception(collect($valid->errors()->all())->join("<br>"),400);
-            if ($request->jenis_soal['value'] == 'essay' && collect($request->pilihan_jawaban)->count() > 1) throw new \Exception('Pilihan jawaban untuk Jenis soal isian tidak boleh lebih dari 1 (satu)',400);
+            //if ($request->jenis_soal['value'] == 'essay' && collect($request->pilihan_jawaban)->count() > 1) throw new \Exception('Pilihan jawaban untuk Jenis soal isian tidak boleh lebih dari 1 (satu)',400);
             return $request;
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),400);
@@ -78,7 +78,7 @@ class PengetahuanValidation
                 'pilihan_jawaban.*.nomor' => 'required|numeric|min:1'
             ]);
             if ($valid->fails()) throw new \Exception(collect($valid->errors()->all())->join("<br>"),400);
-            if ($request->jenis_soal['value'] == 'essay' && collect($request->pilihan_jawaban)->count() > 1) throw new \Exception('Pilihan jawaban untuk Jenis soal isian tidak boleh lebih dari 1 (satu)',400);
+            //if ($request->jenis_soal['value'] == 'essay' && collect($request->pilihan_jawaban)->count() > 1) throw new \Exception('Pilihan jawaban untuk Jenis soal isian tidak boleh lebih dari 1 (satu)',400);
             return $request;
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),400);

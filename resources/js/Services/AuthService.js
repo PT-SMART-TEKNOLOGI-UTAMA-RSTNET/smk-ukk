@@ -10,7 +10,7 @@ export const loginAttempt = async (data) => {
 };
 export const currentUser = async (token) => {
     let request = Axios({
-        headers : { "Authorization" : "Bearer " + token },
+        headers : { "Authorization" : "Bearer " + token, "Accept" : "application/json" },
         method : 'get',
         url : window.origin + '/api/auth/me'
     });
@@ -18,7 +18,7 @@ export const currentUser = async (token) => {
 };
 export const allUsers = async (token,data) => {
     let request = Axios({
-        headers : { "Authorization" : "Bearer " + token },
+        headers : { "Authorization" : "Bearer " + token, "Accept" : "application/json" },
         method : 'post', data : data,
         url : window.origin + '/api/auth/users'
     });

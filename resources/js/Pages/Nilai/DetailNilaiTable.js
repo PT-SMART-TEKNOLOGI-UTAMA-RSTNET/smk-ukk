@@ -23,7 +23,7 @@ export default class DetailNilaiTable extends React.Component{
         return response;
     }
     render() {
-        const detailKomponen = ({data}) => <DetailKomponenTable data={data.value.komponen}/>
+        const detailKomponen = ({data}) => <DetailKomponenTable jenis={data.label} data={data.value.komponen}/>;
         const columns = [
             { name : 'Komponen', selector : row => row.label },
             { name : 'Nilai', grow : 0, width : '70px', center : true, selector : row => this.renderX(row) }

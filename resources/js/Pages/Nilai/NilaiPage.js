@@ -29,6 +29,7 @@ export default class NilaiPage extends React.Component{
         };
         this.loadMe = this.loadMe.bind(this);
         this.loadPeserta = this.loadPeserta.bind(this);
+        this.hitungTotalNilai = this.hitungTotalNilai.bind(this);
     }
     componentDidMount(){
         this.loadMe();
@@ -100,6 +101,15 @@ export default class NilaiPage extends React.Component{
         this.setState({loading:false});
         this.loadUjian();
     }
+    hitungTotalNilai(data){
+        let nilaiPengetahuan = data.meta.nilai[1].value.nilai.konversi;
+        nilaiPengetahuan = ( nilaiPengetahuan * 30 ) / 100;
+        let nilaiKeterampilan = data.meta.nilai[0].value.nilai.konversi;
+        nilaiKeterampilan = ( nilaiKeterampilan * 70) / 100;
+        let nilaiAkhir = nilaiPengetahuan + nilaiKeterampilan;
+        nilaiAkhir = Math.round(nilaiAkhir);
+        return nilaiAkhir;
+    }
     render(){
         const detailNilai = ({data}) => <DetailNilaiTable data={data.meta.nilai}/>;
         const columns = [
@@ -108,8 +118,7 @@ export default class NilaiPage extends React.Component{
             { name : 'P', selector : row => row.meta.nilai[0].value.nilai.konversi, center : true, width : '50px' },
             { name : 'K', selector : row => row.meta.nilai[1].value.nilai.konversi, center : true, width : '50px' },
             { name : 'S', selector : row => row.meta.nilai[0].value.nilai.konversi, center : true, width : '50px' },
-            { name : 'NA', width : '70px', center : true,
-                selector : row => Math.round((row.meta.nilai[0].value.nilai.konversi + row.meta.nilai[1].value.nilai.konversi + row.meta.nilai[0].value.nilai.konversi)/3) },
+            { name : 'NA', width : '70px', center : true, selector : row => this.hitungTotalNilai(row) },
         ];
         return (
             <>

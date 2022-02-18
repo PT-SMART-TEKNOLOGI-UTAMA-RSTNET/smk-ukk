@@ -2,7 +2,7 @@ import Axios from 'axios';
 
 export const getSchedules = async (token,data) => {
     let request = Axios({
-        headers : { "Authorization" : "Bearer " + token },
+        headers : { "Authorization" : "Bearer " + token, "Accept" : "application/json" },
         method : 'post', data : data,
         url : window.origin + '/api/auth/master/schedules'
     });
@@ -10,7 +10,7 @@ export const getSchedules = async (token,data) => {
 };
 export const saveSchedules = async (token,data) => {
     let request = Axios({
-        headers : { "Authorization" : "Bearer " + token },
+        headers : { "Authorization" : "Bearer " + token, "Accept" : "application/json" },
         method : 'post', data : data,
         url : window.origin + '/api/auth/master/schedules'
     });
@@ -18,7 +18,7 @@ export const saveSchedules = async (token,data) => {
 };
 export const savePeserta = async (token,data) => {
     let request = Axios({
-        headers : { "Authorization" : "Bearer " + token },
+        headers : { "Authorization" : "Bearer " + token, "Accept" : "application/json" },
         method : 'post', data : data,
         url : window.origin + '/api/auth/master/schedules/peserta'
     });
@@ -26,7 +26,7 @@ export const savePeserta = async (token,data) => {
 };
 export const saveCapaianKeterampilan = async (token,data) => {
     let request = Axios({
-        headers: {"Authorization": "Bearer " + token},
+        headers: {"Authorization": "Bearer " + token, "Accept" : "application/json"},
         method: 'post', data: data,
         url: window.origin + '/api/auth/nilai'
     });
@@ -34,7 +34,7 @@ export const saveCapaianKeterampilan = async (token,data) => {
 };
 export const getNilai = async (token,data) => {
     let request = Axios({
-        headers: {"Authorization": "Bearer " + token},
+        headers: {"Authorization": "Bearer " + token, "Accept" : "application/json"},
         method: 'post', data: data,
         url: window.origin + '/api/auth/nilai'
     });
