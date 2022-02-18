@@ -11,6 +11,7 @@ namespace App\Repositories;
 
 use App\Models\CapaianKeterampilan;
 use App\Models\CapaianPengetahuan;
+use App\Models\Jurusan;
 use App\Models\KeterampilanIndikator;
 use App\Models\KeterampilanKomponen;
 use App\Models\PengetahuanIndikator;
@@ -18,6 +19,8 @@ use App\Models\PengetahuanKomponen;
 use App\Models\Peserta;
 use App\Models\SikapCapaian;
 use App\Models\SikapIndikator;
+use App\Models\Ujian;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Ramsey\Uuid\Uuid;
 
@@ -29,6 +32,74 @@ class NilaiRepository
         $this->userRepository = new AuthRepository();
     }
 
+    public function downloadNilai(Request $request){
+        try {
+            $ujian = Ujian::where('id', $request->id)->first();
+            $jurusan = JurusanRepository::getJurusan(new Request(['id' => $ujian->jurusan]))->first();
+            $pesertas = Peserta::where('ujian', $request->id)->orderBy('nopes','asc')->get(['id','user','paket','ujian','nopes']);
+
+            if ($pesertas->count() == 0) throw new \Exception('Tidak ada data peserta',400);
+
+            $inputFileName = public_path() . '/format/download_nilai.xlsx';
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($inputFileName);
+            $sheet = $spreadsheet->getSheetByName('input');
+            $sheet->setCellValue("D2", ": SMK Muhammadiyah Kandanghaur");
+            $sheet->setCellValue("D4",": " . Carbon::now()->translatedFormat('d F Y, H:i'));
+            $sheet->setCellValue("D5", ": " . $jurusan['label']);
+            $sheet->setCellValue("D6",": " . Carbon::parse($ujian->start_at)->translatedFormat('d F Y') . ' s/d ' . Carbon::parse($ujian->end_at)->translatedFormat('d F Y'));
+            $row = 10;
+            foreach ($pesertas as $index => $peserta){
+                ini_set('max_execution_time',0);
+                $user = $peserta->userObj;
+                $paket = $peserta->paketObj;
+                $sheet->setCellValue("A$row",$index + 1);
+                $sheet->setCellValue("B$row", $user->nis);
+                $sheet->setCellValue("C$row", $peserta->nopes);
+                $sheet->setCellValue("D$row", $user->name);
+                $sheet->setCellValue("E$row", $paket->name);
+                $nilaiPengetahuan = CapaianPengetahuan::where('peserta', $peserta->id)->where('ujian', $ujian->id)->sum('nilai') / PengetahuanKomponen::where('paket', $peserta->paket)->count();
+                $sheet->setCellValue("F$row", round($nilaiPengetahuan));
+
+                $nilaiKeterampilan = 0;
+                $komponenKeterampilans = KeterampilanKomponen::where('paket', $peserta->paket)->orderBy('nomor','asc')->get(['id','nilai_sangat_baik','nilai_baik','nilai_cukup','nilai_tidak']);
+                foreach ($komponenKeterampilans as $komponenKeterampilan){
+                    $capaianIndikator = 0;
+                    $indikators = KeterampilanIndikator::where('komponen', $komponenKeterampilan->id)->orderBy('nomor','asc')->get(['id']);
+                    foreach ($indikators as $indikator){
+                        $capaian = CapaianKeterampilan::where('indikator', $indikator->id)->where('peserta', $peserta->id)->where('ujian', $ujian->id)->get('nilai');
+                        if ($capaian->count() > 0) {
+                            $capaianIndikator = $capaianIndikator + $capaian->first()->nilai;
+                        }
+                    }
+                    if ($capaianIndikator >= $komponenKeterampilan->nilai_sangat_baik) {
+                        $nilaiKeterampilan = $nilaiKeterampilan + 3;
+                    } elseif ($capaianIndikator >= $komponenKeterampilan->nilai_baik && $capaianIndikator < $komponenKeterampilan->nilai_cukup) {
+                        $nilaiKeterampilan = $nilaiKeterampilan + 2;
+                    } elseif ($capaianIndikator >= $komponenKeterampilan->nilai_cukup && $capaianIndikator < $komponenKeterampilan->nilai_tidak) {
+                        $nilaiKeterampilan = $nilaiKeterampilan + 1;
+                    }
+                }
+                if ($nilaiKeterampilan == 0) {
+                    $sheet->setCellValue("G$row", 60);
+                } elseif ($nilaiKeterampilan == 1) {
+                    $sheet->setCellValue("G$row", 70);
+                } elseif ($nilaiKeterampilan == 2) {
+                    $sheet->setCellValue("G$row", 85);
+                } elseif ($nilaiKeterampilan == 4) {
+                    $sheet->setCellValue("G$row", 100);
+                }
+                $sheet->setCellValue("H$row","=(F$row*30%)+(G$row*70%)");
+                $row++;
+            }
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="NILAI-UKK-'.$jurusan['label'].'.xlsx"');
+            header('Cache-Control: max-age=0');
+            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+            $writer->save('php://output');
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),500);
+        }
+    }
     public function cetakLembarNilai(Request $request) {
         try {
             $peserta = $this->table($request)->first();
@@ -242,10 +313,8 @@ class NilaiRepository
                     $capaianSikap->indikator = $komponenSikap->id;
                     $capaianSikap->peserta = $peserta->id;
                     $capaianSikap->ujian = $peserta->ujian;
-                    if (auth()->check()) $capaianSikap->created_by = auth()->guard('api')->user()->id;
                 } else {
                     $capaianSikap = $capaianSikap->first();
-                    if (auth()->check()) $capaianSikap->updated_by = auth()->guard('api')->user()->id;
                 }
                 $capaianSikap->nilai = 100;
                 $capaianSikap->saveOrFail();

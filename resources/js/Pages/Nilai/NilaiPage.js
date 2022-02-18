@@ -36,9 +36,14 @@ export default class NilaiPage extends React.Component{
         this.hitungTotalNilai = this.hitungTotalNilai.bind(this);
         this.togglePrinting = this.togglePrinting.bind(this);
         this.handlePrinting = this.handlePrinting.bind(this);
+        this.downloadNilai = this.downloadNilai.bind(this);
     }
     componentDidMount(){
         this.loadMe();
+    }
+    downloadNilai(){
+        let url = window.origin + '/nilai/download/' + this.state.current_ujian.value;
+        window.open(url,'_blank');
     }
     handlePrinting(){
         const iframe = document.getElementById('iframe-print');
@@ -158,7 +163,10 @@ export default class NilaiPage extends React.Component{
                                             <button onClick={this.togglePrinting} disabled={this.state.loading} className="btn btn-outline-warning btn-flat"><i className="fas fa-xmark"/> Tutup Cetak</button>
                                         </>
                                         :
-                                        <button disabled={this.state.loading} onClick={this.loadPeserta} className="btn btn-outline-secondary btn-flat">{this.state.loading ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                        <>
+                                            <button disabled={this.state.loading} onClick={this.downloadNilai} className="btn btn-outline-primary btn-flat mr-1"><i className="fas fa-download"/> Download Nilai</button>
+                                            <button disabled={this.state.loading} onClick={this.loadPeserta} className="btn btn-outline-secondary btn-flat">{this.state.loading ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                        </>
                                     }
                                 </div>
                             </div>

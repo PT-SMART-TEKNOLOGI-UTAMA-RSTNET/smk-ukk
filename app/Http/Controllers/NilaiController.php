@@ -24,6 +24,14 @@ class NilaiController extends Controller
         $this->repository = new NilaiRepository();
         $this->validation = new NilaiValidation();
     }
+    public function downloadNilai(Request $request){
+        try {
+            $valid = $this->validation->downloadNilai($request);
+            $this->repository->downloadNilai($valid);
+        } catch (\Exception $exception) {
+            return responseFormat($exception->getCode(), $exception->getMessage());
+        }
+    }
     public function cetakLembarNilai(Request $request) {
         try {
             $valid = $this->validation->cetakLembarNilai($request);

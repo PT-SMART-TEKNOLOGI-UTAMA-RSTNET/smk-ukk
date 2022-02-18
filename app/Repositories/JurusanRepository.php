@@ -15,6 +15,27 @@ use Illuminate\Support\Facades\DB;
 
 class JurusanRepository
 {
+    public static function getJurusan(Request $request) {
+        try {
+            $respone = collect([]);
+            $jurusans = DB::connection(config('database.erapor'))->table('jurusans')->orderBy('name','asc');
+            if (strlen($request->id) > 0) $jurusans = $jurusans->where('id', $request->id);
+            $jurusans = $jurusans->get();
+            foreach ($jurusans as $jurusan){
+                $respone->push([
+                    'value' => $jurusan->id,
+                    'label' => $jurusan->name,
+                    'meta' => [
+                        'bidang' => $jurusan->bidang,
+                        'paket' => $jurusan->kompetensi
+                    ]
+                ]);
+            }
+            return $respone;
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),500);
+        }
+    }
     public function table(Request $request) {
         try {
             $respone = collect([]);
