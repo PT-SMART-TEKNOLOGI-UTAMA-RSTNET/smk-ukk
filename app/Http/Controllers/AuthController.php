@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Repositories\AuthRepository;
 use App\Validations\AuthValidation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
 class AuthController extends Controller
 {
@@ -16,6 +17,14 @@ class AuthController extends Controller
         $this->repository = new AuthRepository();
     }
 
+    public function syncErapor(Request $request) {
+        try {
+            $params = Artisan::call('db:seed');
+            return responseFormat(200,'Berhasil syncronisasi dengan erapor', $params);
+        } catch (\Exception $exception) {
+            return responseFormat($exception->getCode(), $exception->getMessage());
+        }
+    }
     public function users(Request $request) {
         try {
             $code = 400; $message = 'Undefined Method'; $params = null;

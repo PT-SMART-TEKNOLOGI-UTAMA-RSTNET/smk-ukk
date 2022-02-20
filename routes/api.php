@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AsessorController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KomponenKeterampilanController;
 use App\Http\Controllers\KomponenPengetahuanController;
@@ -26,6 +27,7 @@ Route::get('/check-connection',function (){
     return responseFormat(200,'ok','ok');
 });
 Route::group(['prefix' => 'auth', 'middleware' => 'auth:api'],function (){
+    Route::post('/sync',[AuthController::class,'syncErapor']);
     Route::get('/me',[AuthController::class,'me']);
     Route::post('/logout',[AuthController::class,'logout']);
     Route::any('/users',[AuthController::class,'users']);
@@ -45,6 +47,7 @@ Route::group(['prefix' => 'auth', 'middleware' => 'auth:api'],function (){
             Route::any('/',[ScheduleController::class,'crud']);
             Route::any('/peserta',[PesertaController::class,'crud']);
         });
+        Route::any('/asessors', [AsessorController::class,'crud']);
     });
     Route::any('/nilai',[NilaiController::class,'crud']);
 });

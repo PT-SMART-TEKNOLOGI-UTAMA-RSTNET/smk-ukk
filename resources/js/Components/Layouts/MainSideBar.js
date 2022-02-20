@@ -32,12 +32,14 @@ export default class MainSideBar extends React.Component{
         let menus = this.state.menus;
         switch (current_user.meta.level){
             default :
+            case 'siswa' :
                 menus = [];
                 break;
             case 'admin' :
                 menus = [
                     { value : 'Paket Soal', icon : 'fa-boxes-stacked', url : window.origin + '/master/packages', route_name : 'packages', childrens : [] },
                     { value : 'Jadwal Ujian', icon : 'fa-calendar-check', url : window.origin + '/master/schedules', route_name : 'schedules', childrens : [] },
+                    { value : 'Asesor', icon : 'fa-user-tie', url : window.origin + '/master/asessors', route_name : 'asessors', childrens : [] }
                     /*{ value : 'Nilai', icon : 'fa-tasks', url : window.origin + '', route_name : 'configs', childrens : [
                             { value : 'Data Nilai', icon : 'fa-blender-phone', url : window.origin + '/nilai', route_name : 'configs/app' },
                         ] }*/

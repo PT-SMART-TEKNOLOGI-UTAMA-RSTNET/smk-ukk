@@ -31,6 +31,7 @@ Route::group(['prefix' => 'master'],function (){
         Route::get('/', function (){ return view('master.schedules'); });
         Route::get('/{schedules}/peserta', function (){ return view('master.peserta'); });
     });
+    Route::get('/asessors', function (){ return view('master.asessors'); });
 });
 Route::get('/nilai/download/{id}',[NilaiController::class,'downloadNilai']);
 Route::get('/nilai/cetak/{id}',[NilaiController::class,'cetakLembarNilai']);
