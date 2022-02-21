@@ -18,10 +18,11 @@ class PesertaValidation
         try {
             $valid = Validator::make($request->all(),[
                 'jadwal' => 'required|string|min:10|exists:ujians,id',
-                'peserta' => 'required|array|min:1',
+                'peserta' => 'nullable|array',
                 'peserta.*.value' => 'nullable|exists:pesertas,id',
                 'peserta.*.siswa' => 'required|array|size:3',
                 'peserta.*.siswa.value' => 'required|string|min:10|exists:users,id',
+                'peserta.*.siswa.nopes' => 'nullable|unique:pesertas,nopes',
                 'peserta.*.paket_soal' => 'required|array|size:3',
                 'peserta.*.paket_soal.value' => 'required|string|min:10|exists:paket_soals,id',
                 'peserta.*.penguji_internal' => 'required|array|size:3',

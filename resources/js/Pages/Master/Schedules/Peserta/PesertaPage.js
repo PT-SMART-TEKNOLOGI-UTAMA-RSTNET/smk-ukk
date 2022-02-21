@@ -1,11 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import DataTable from "react-data-table-component";
-import Swal from "sweetalert2";
-import Axios from 'axios';
 import Select from 'react-select'
 
-import {compactGrid} from '../../../../Components/DataTableStyles';
 import {showErrorMessage, showSuccessMessage} from "../../../../Components/Alerts";
 import MainHeader from "../../../../Components/Layouts/MainHeader";
 import MainSideBar from "../../../../Components/Layouts/MainSideBar";
@@ -25,7 +21,7 @@ export default class PesertaPage extends React.Component{
             breadcrumbs : [
                 { label : 'Jadwal Ujian', url : window.origin + '/master/schedules' }
             ],
-            loading : false,
+            loading : { penguji : true, peserta : true, siswa : true, paket : true, ujian : true, current_user : true },
             form : {
                 _method : 'put', jadwal : '', peserta : [], deleted_peserta : [],
             },
@@ -48,16 +44,22 @@ export default class PesertaPage extends React.Component{
         this.handleSelect = this.handleSelect.bind(this);
         this.handleDeletePeserta = this.handleDeletePeserta.bind(this);
         this.submitSavePeserta = this.submitSavePeserta.bind(this);
+        this.handleInput = this.handleInput.bind(this);
     }
     componentDidMount(){
         this.loadMe();
+    }
+    handleInput(event,index){
+        let form = this.state.form;
+        form.peserta[index].nopes = event.target.value;
+        this.setState({form});
     }
     handleSelect(e,formName,index){
         let form = this.state.form;
         form.peserta[index][formName] = e;
         if (formName === 'siswa'){
             form.peserta[index].nis = e.meta.nis;
-            form.peserta[index].nopes = e.meta.nopes;
+            form.peserta[index].nopes = e.meta.nopes === null ? '' : e.meta.nopes;
             form.peserta[index].rombel = e.meta.rombel;
         }
         this.setState({form});
@@ -73,22 +75,55 @@ export default class PesertaPage extends React.Component{
     handleAddPeserta(){
         let form = this.state.form;
         form.peserta.push({
-            index : form.peserta.length, value : null, nis : null, nopes : null, rombel : null, penguji_internal : null, penguji_external : null, paket_soal : null,
+            index : form.peserta.length, value : null, nis : null, nopes : '', rombel : null, penguji_internal : null, penguji_external : null, paket_soal : null,
             siswa : null, is_default : false
         });
         this.setState({form});
     }
+    populateForm(){
+        let loading = this.state.loading;
+        loading.peserta = true;
+        this.setState({loading});
+        let form = this.state.form;
+        let peserta = this.state.current_schedule.meta.peserta;
+        peserta.map((item,index)=>{
+            let pengujiInternal = null, pengujiExternal = null, paketSoal = null, siswa = null;
+            let pengujiInternalIndex = this.state.penguji.findIndex((e) => e.value === item.meta.penguji.internal.value,0);
+            let pengujiExternalIndex = this.state.penguji.findIndex((e) => e.value === item.meta.penguji.external.value,0);
+            let paketSoalIndex = this.state.paket_soal.findIndex((e) => e.value === item.meta.paket.value,0);
+            let siswaIndex = this.state.siswa.findIndex((e) => e.value === item.meta.user.value,0);
+            if (pengujiInternalIndex >= 0) pengujiInternal = this.state.penguji[pengujiInternalIndex];
+            if (pengujiExternalIndex >= 0) pengujiExternal = this.state.penguji[pengujiExternalIndex];
+            if (paketSoalIndex >= 0) paketSoal = this.state.paket_soal[paketSoalIndex];
+            if (siswaIndex >= 0) siswa = this.state.siswa[siswaIndex];
+            form.peserta.push({
+                index : index, value : item.value,
+                nis : item.meta.user.meta.kode.nis,
+                nopes : item.meta.nopes,
+                rombel : item.meta.user.meta.rombel,
+                penguji_internal : pengujiInternal, penguji_external : pengujiExternal, paket_soal : paketSoal, siswa : siswa, is_default : true,
+            });
+        });
+        loading.peserta = false;
+        this.setState({loading,form});
+    }
     async submitSavePeserta(e){
         e.preventDefault();
-        let seen = new Set();
+        let seen = new Set(), seenNopes = new Set(), namanya = [];
         let hasDuplicate = this.state.form.peserta.some((i)=>{
             return seen.size === seen.add(i.siswa).size;
         });
-        if (hasDuplicate){
-            let namanya = [];
+        let duplicateNopes = this.state.form.peserta.some((i)=>{
+            return seenNopes.size === seenNopes.add(i.nopes).size;
+        });
+        if (hasDuplicate) {
             seen = Array.from(seen);
-            seen.map((item)=>namanya.push('<b>' + item.label + '</b>'));
+            seen.map((item) => namanya.push('<b>' + item.label + '</b>'));
             showErrorMessage('Duplikat peserta terdeteksi atas nama ' + namanya.join(', '));
+        } else if (duplicateNopes) {
+            seenNopes = Array.from(seenNopes);
+            seenNopes.map((item) => namanya.push('<b>' + item + '</b>'));
+            showErrorMessage('Duplikat nomor peserta terdeteksi dengan nomor ' + namanya.join(', '));
         } else {
             let button = this.state.button;
             button.submit.disabled = true;
@@ -116,38 +151,15 @@ export default class PesertaPage extends React.Component{
             this.setState({button});
         }
     }
-    populateForm(){
-        this.setState({loading:true});
-        let form = this.state.form;
-        let peserta = this.state.current_schedule.meta.peserta;
-        peserta.map((item,index)=>{
-            let pengujiInternal = null, pengujiExternal = null, paketSoal = null, siswa = null;
-            let pengujiInternalIndex = this.state.penguji.findIndex((e) => e.value === item.meta.penguji.internal.value,0);
-            let pengujiExternalIndex = this.state.penguji.findIndex((e) => e.value === item.meta.penguji.external.value,0);
-            let paketSoalIndex = this.state.paket_soal.findIndex((e) => e.value === item.meta.paket.value,0);
-            let siswaIndex = this.state.siswa.findIndex((e) => e.value === item.meta.user.value,0);
-            console.log(item);
-            if (pengujiInternalIndex >= 0) pengujiInternal = this.state.penguji[pengujiInternalIndex];
-            if (pengujiExternalIndex >= 0) pengujiExternal = this.state.penguji[pengujiExternalIndex];
-            if (paketSoalIndex >= 0) paketSoal = this.state.paket_soal[paketSoalIndex];
-            if (siswaIndex >= 0) siswa = this.state.siswa[siswaIndex];
-            form.peserta.push({
-                index : index, value : item.value,
-                nis : item.meta.user.meta.kode.nis,
-                nopes : item.meta.nopes,
-                rombel : item.meta.user.meta.rombel,
-                penguji_internal : pengujiInternal, penguji_external : pengujiExternal, paket_soal : paketSoal, siswa : siswa, is_default : true,
-            });
-        });
-        this.setState({loading:false,form});
-    }
     async loadSchedules(){
         let current_url = window.location.href;
         current_url = current_url.split('/');
         if (current_url.length > 5){
             if (typeof current_url[5] !== 'undefined') {
                 current_url = current_url[5];
-                this.setState({loading:true,current_schedule:null});
+                let loading = this.state.loading;
+                loading.ujian = true,loading.peserta = true, loading.paket = true, loading.siswa = true, loading.penguji = true;
+                this.setState({loading,current_schedule:null});
                 try {
                     let response = await getSchedules(this.state.token,{id:current_url});
                     if (response.data.params === null) {
@@ -163,17 +175,24 @@ export default class PesertaPage extends React.Component{
                         this.setState({current_schedule,form});
                     }
                 } catch (e) {
+                    if (e.response.status === 401){
+                        window.location.href = window.origin + '/logout';
+                        e.response.data.message = 'Waktu sesi telah habis';
+                    }
                     showErrorMessage(e.response.data.message);
                 }
-                this.setState({loading:false});
+                loading.ujian = false;
+                this.setState({loading});
             }
         }
         this.loadSiswa();
     }
     async loadPaketSoal(){
-        this.setState({loading:true,paket_soal:[]});
+        let loading = this.state.loading;
+        loading.paket = true;
+        this.setState({loading,paket_soal:[]});
         try {
-            let response = await getPackages(this.state.token,{jurusan:this.state.current_schedule.meta.jurusan.id});
+            let response = await getPackages(this.state.token,{jurusan:this.state.current_schedule.meta.jurusan.value});
             if (response.data.params === null){
                 showErrorMessage(response.data.message);
             } else {
@@ -181,13 +200,20 @@ export default class PesertaPage extends React.Component{
                 this.setState({paket_soal});
             }
         } catch (e) {
+            if (e.response.status === 401){
+                window.location.href = window.origin + '/logout';
+                e.response.data.message = 'Waktu sesi telah habis';
+            }
             showErrorMessage(e.response.data.message);
         }
-        this.setState({loading:false});
+        loading.paket = false;
+        this.setState({loading});
         this.populateForm();
     }
     async loadPenguji(){
-        this.setState({loading:true,penguji:[]});
+        let loading = this.state.loading;
+        loading.penguji = true;
+        this.setState({loading,penguji:[]});
         try {
             let response = await allUsers(this.state.token,{type:'guru'});
             if (response.data.params === null) {
@@ -197,15 +223,22 @@ export default class PesertaPage extends React.Component{
                 this.setState({penguji});
             }
         } catch (e) {
+            if (e.response.status === 401){
+                window.location.href = window.origin + '/logout';
+                e.response.data.message = 'Waktu sesi telah habis';
+            }
             showErrorMessage(e.response.data.message);
         }
-        this.setState({loading:false});
+        loading.penguji = false;
+        this.setState({loading});
         this.loadPaketSoal();
     }
     async loadSiswa(){
-        this.setState({loading:true,siswa:[]});
+        let loading = this.state.loading;
+        loading.siswa = true;
+        this.setState({loading,siswa:[]});
         try {
-            let response = await allUsers(this.state.token,{type:'siswa',jurusan:this.state.current_schedule.meta.jurusan.id});
+            let response = await allUsers(this.state.token,{type:'siswa',jurusan:this.state.current_schedule.meta.jurusan.value});
             if (response.data.params === null){
                 showErrorMessage(response.data.message);
             } else {
@@ -213,13 +246,20 @@ export default class PesertaPage extends React.Component{
                 this.setState({siswa});
             }
         } catch (e) {
+            if (e.response.status === 401){
+                window.location.href = window.origin + '/logout';
+                e.response.data.message = 'Waktu sesi telah habis';
+            }
             showErrorMessage(e.response.data.message);
         }
-        this.setState({loading:false});
+        loading.siswa = false;
+        this.setState({loading});
         this.loadPenguji();
     }
     async loadMe(){
-        this.setState({loading:true,current_user:null});
+        let loading = this.state.loading;
+        loading.current_user = true;
+        this.setState({loading,current_user:null});
         try {
             let response = await currentUser(this.state.token);
             if (response.data.params === null) {
@@ -228,13 +268,15 @@ export default class PesertaPage extends React.Component{
                 let current_user = response.data.params;
                 this.setState({current_user});
             }
-        } catch (error) {
-            if (error.response.status === 401){
+        } catch (e) {
+            if (e.response.status === 401){
                 window.location.href = window.origin + '/logout';
+                e.response.data.message = 'Waktu sesi telah habis';
             }
-            showErrorMessage(error.response.data.message);
+            showErrorMessage(e.response.data.message);
         }
-        this.setState({loading:false});
+        loading.current_user = false;
+        this.setState({loading});
         this.loadSchedules();
     }
     render(){
@@ -252,11 +294,12 @@ export default class PesertaPage extends React.Component{
                                     Jumlah Peserta = {this.state.form.peserta.filter((e) => e.user !== null && e.paket !== null && e.internal !== null && e.external !== null ).length}
                                 </h3>
                                 <div className="card-tools">
-                                    {this.state.form.peserta.filter((e) => e.user !== null && e.paket !== null && e.internal !== null && e.external !== null ).length !== this.state.form.peserta.length || this.state.form.peserta.length === 0 ? null :
-                                        <button type="button" disabled={this.state.button.submit.disabled || this.state.loading} onClick={this.submitSavePeserta} className="btn btn-outline-success mr-1">{this.state.button.submit.icon} {this.state.button.submit.text}</button>
-                                    }
-                                    <button type="button" disabled={this.state.loading || this.state.button.submit.disabled} onClick={this.handleAddPeserta} className="btn btn-outline-primary mr-1" title="Tambah Data"><i className="fas fa-plus-circle"/> Tambah Data</button>
-                                    <button type="button" disabled={this.state.loading || this.state.button.submit.disabled} onClick={this.loadSchedules} className="btn btn-outline-secondary">{this.state.loading ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                    <button type="button" disabled={this.state.button.submit.disabled || this.state.loading.peserta} onClick={this.submitSavePeserta} className="btn btn-outline-success btn-flat mr-1">{this.state.button.submit.icon} {this.state.button.submit.text}</button>
+                                    <button type="button" disabled={this.state.loading.paket || this.state.loading.penguji || this.state.loading.siswa || this.state.button.submit.disabled} onClick={this.handleAddPeserta} className="btn btn-outline-primary btn-flat mr-1" title="Tambah Peserta"><i className="fas fa-plus-circle"/> Tambah Peserta</button>
+                                    <button title="Reload Data Siswa" type="button" disabled={this.state.loading.siswa || this.state.button.submit.disabled} onClick={this.loadSiswa} className="btn btn-outline-secondary btn-flat mr-1">{this.state.loading.siswa ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                    <button title="Reload Data Paket Soal" type="button" disabled={this.state.loading.paket || this.state.button.submit.disabled} onClick={this.loadPaketSoal} className="btn btn-outline-secondary btn-flat mr-1">{this.state.loading.paket ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                    <button title="Reload Data Penguji" type="button" disabled={this.state.loading.penguji || this.state.button.submit.disabled} onClick={this.loadPenguji} className="btn btn-outline-secondary btn-flat mr-1">{this.state.loading.penguji ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                    <button title="Reload Data Peserta" type="button" disabled={this.state.loading.peserta || this.state.button.submit.disabled} onClick={this.loadSchedules} className="btn btn-outline-secondary btn-flat">{this.state.loading.peserta ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
                                 </div>
                             </div>
                             <div className="card-body p-0">
@@ -276,7 +319,7 @@ export default class PesertaPage extends React.Component{
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {this.state.loading ?
+                                    {this.state.loading.peserta ?
                                         <tr><td colSpan={7} className="align-middle text-center"><i className="fas fa-spin fa-circle-notch"/><br/>Memuat data ...</td></tr> :
                                         this.state.form.peserta.length === 0 ?
                                             <tr><td colSpan={7} className="align-middle text-center text-warning"><i className="fas fa-exclamation-triangle"/><br/>Data tidak ditemukan</td></tr>
@@ -284,7 +327,9 @@ export default class PesertaPage extends React.Component{
                                             this.state.form.peserta.map((item,index)=>
                                             <tr key={index}>
                                                 <td className="align-middle text-center text-xs">{item.nis}</td>
-                                                <td className="align-middle text-center text-xs">{item.nopes}</td>
+                                                <td className="align-middle text-center text-xs">
+                                                    <input onChange={(e)=>this.handleInput(e,index)} name="nopes" value={item.nopes} className="form-control text-sm" placeholder="Kosongkan jika otomatis"/>
+                                                </td>
                                                 <td className="align-middle text-xs">
                                                     <Select onChange={(e)=>this.handleSelect(e,'siswa',index)} value={item.siswa} options={this.state.siswa}/>
                                                 </td>
@@ -306,11 +351,12 @@ export default class PesertaPage extends React.Component{
                                 </table>
                             </div>
                             <div className="card-footer text-right pr-2">
-                                {this.state.form.peserta.filter((e) => e.user !== null && e.paket !== null && e.internal !== null && e.external !== null ).length !== this.state.form.peserta.length || this.state.form.peserta.length === 0 ? null :
-                                    <button type="button" disabled={this.state.button.submit.disabled || this.state.loading} onClick={this.submitSavePeserta} className="btn btn-outline-success mr-1">{this.state.button.submit.icon} {this.state.button.submit.text}</button>
-                                }
-                                <button type="button" disabled={this.state.loading || this.state.button.submit.disabled} onClick={this.handleAddPeserta} className="btn btn-outline-primary mr-1" title="Tambah Data"><i className="fas fa-plus-circle"/> Tambah Data</button>
-                                <button type="button" disabled={this.state.loading || this.state.button.submit.disabled} onClick={this.loadSchedules} className="btn btn-outline-secondary">{this.state.loading ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                <button type="button" disabled={this.state.button.submit.disabled || this.state.loading.peserta} onClick={this.submitSavePeserta} className="btn btn-outline-success btn-flat mr-1">{this.state.button.submit.icon} {this.state.button.submit.text}</button>
+                                <button type="button" disabled={this.state.loading.paket || this.state.loading.penguji || this.state.loading.siswa || this.state.button.submit.disabled} onClick={this.handleAddPeserta} className="btn btn-outline-primary btn-flat mr-1" title="Tambah Peserta"><i className="fas fa-plus-circle"/> Tambah Peserta</button>
+                                <button title="Reload Data Siswa" type="button" disabled={this.state.loading.siswa || this.state.button.submit.disabled} onClick={this.loadSiswa} className="btn btn-outline-secondary btn-flat mr-1">{this.state.loading.siswa ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                <button title="Reload Data Paket Soal" type="button" disabled={this.state.loading.paket || this.state.button.submit.disabled} onClick={this.loadPaketSoal} className="btn btn-outline-secondary btn-flat mr-1">{this.state.loading.paket ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                <button title="Reload Data Penguji" type="button" disabled={this.state.loading.penguji || this.state.button.submit.disabled} onClick={this.loadPenguji} className="btn btn-outline-secondary btn-flat mr-1">{this.state.loading.penguji ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                <button title="Reload Data Peserta" type="button" disabled={this.state.loading.peserta || this.state.button.submit.disabled} onClick={this.loadSchedules} className="btn btn-outline-secondary btn-flat">{this.state.loading.peserta ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
                             </div>
                         </form>
                     </section>

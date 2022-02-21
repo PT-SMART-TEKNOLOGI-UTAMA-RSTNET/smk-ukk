@@ -54,20 +54,22 @@ class PesertaRepository
     public function create(Request $request) {
         try {
             $ujian = Ujian::where('id', $request->jadwal)->first();
-            foreach ($request->peserta as $inputPeserta){
-                if (strlen($inputPeserta['value']) > 0) {
-                    $peserta = Peserta::where('id', $inputPeserta['value'])->first();
-                } else {
-                    $peserta = new Peserta();
-                    $peserta->id = Uuid::uuid4()->toString();
-                    $peserta->nopes = $this->generateNopes($ujian);
+            if (collect($request->peserta)->count() > 0) {
+                foreach ($request->peserta as $inputPeserta){
+                    if (strlen($inputPeserta['value']) > 0) {
+                        $peserta = Peserta::where('id', $inputPeserta['value'])->first();
+                    } else {
+                        $peserta = new Peserta();
+                        $peserta->id = Uuid::uuid4()->toString();
+                    }
+                    $peserta->nopes = strlen($inputPeserta['nopes']) === 0 ? $this->generateNopes($ujian) : $inputPeserta['nopes'];
+                    $peserta->user = $inputPeserta['siswa']['value'];
+                    $peserta->paket = $inputPeserta['paket_soal']['value'];
+                    $peserta->ujian = $ujian->id;
+                    $peserta->penguji_internal = $inputPeserta['penguji_internal']['value'];
+                    $peserta->penguji_external = $inputPeserta['penguji_external']['value'];
+                    $peserta->saveOrFail();
                 }
-                $peserta->user = $inputPeserta['siswa']['value'];
-                $peserta->paket = $inputPeserta['paket_soal']['value'];
-                $peserta->ujian = $ujian->id;
-                $peserta->penguji_internal = $inputPeserta['penguji_internal']['value'];
-                $peserta->penguji_external = $inputPeserta['penguji_external']['value'];
-                $peserta->saveOrFail();
             }
             if (collect($request->deleted_peserta)->count() > 0) {
                 foreach ($request->deleted_peserta as $inputPeserta){
