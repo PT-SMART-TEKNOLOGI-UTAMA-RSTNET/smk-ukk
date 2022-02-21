@@ -104,6 +104,10 @@ export default class PesertaPage extends React.Component{
                     this.loadSchedules();
                 }
             } catch (er) {
+                if (er.response.status === 401){
+                    window.location.href = window.origin + '/logout';
+                    er.response.data.message = 'Waktu sesi telah habis';
+                }
                 showErrorMessage(er.response.data.message);
             }
             button.submit.disabled = false;

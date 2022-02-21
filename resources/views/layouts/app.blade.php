@@ -9,12 +9,12 @@
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
-    <link href="{{asset('css/app.css')}}" rel="stylesheet">
+    <link href="{{asset('css/app.css?time=20220221')}}" rel="stylesheet">
 
 </head>
 <body class="sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed">
     @yield('contents')
     @yield('scripts')
-    <script src="{{asset('js/app.js')}}"></script>
+    <script src="{{asset('js/app.js?time=20220221')}}"></script>
 </body>
 </html>
