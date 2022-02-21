@@ -85,6 +85,7 @@ export default class PesertaPage extends React.Component{
         loading.peserta = true;
         this.setState({loading});
         let form = this.state.form;
+        form.peserta = [];
         let peserta = this.state.current_schedule.meta.peserta;
         peserta.map((item,index)=>{
             let pengujiInternal = null, pengujiExternal = null, paketSoal = null, siswa = null;
