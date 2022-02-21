@@ -290,6 +290,9 @@ class PesertaRepository
                         $kolom_penguji = $user->penguji_type == 'internal' ? 'penguji_internal' : 'penguji_external';
                         $pesertas = $pesertas->where($kolom_penguji, $user->id);
                         break;
+                    case 'admin' :
+                        $pesertas = $pesertas->where('penguji_internal','asd');
+                        break;
                 }
             }
 
