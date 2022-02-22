@@ -26,6 +26,8 @@ class AuthRepository
         try {
             $response = collect([]);
             $users = User::orderBy('name','asc');
+            if (strlen($request->name) > 0) $users = $users->where('name', $request->name);
+            if (strlen($request->nis) > 0) $users = $users->where('nis', $request->nis);
             if (strlen($request->id) > 0) $users = $users->where('id', $request->id);
             $users = $users->get();
             foreach ($users as $user){

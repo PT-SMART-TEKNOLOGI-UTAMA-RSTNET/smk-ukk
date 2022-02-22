@@ -12,13 +12,18 @@ namespace App\Repositories;
 use App\Models\CapaianKeterampilan;
 use App\Models\KeterampilanIndikator;
 use App\Models\KeterampilanKomponen;
+use App\Models\PaketSoal;
 use App\Models\Peserta;
 use App\Models\Ujian;
+use App\Models\User;
 use App\Repositories\Komponen\KeterampilanRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader;
 
 class PesertaRepository
 {
@@ -32,6 +37,82 @@ class PesertaRepository
         $this->komponenKeterampilanRepository = new KeterampilanRepository();
     }
 
+    public function importPeserta(Request $request) {
+        try {
+            $response = collect([]);
+            $file = $request->file('file');
+            $ujian = Ujian::where('id', $request->ujian)->first();
+
+            $defaultInternal = User::where('penguji_type', 'internal')->get('id');
+            $defaultExternal = User::where('penguji_type', 'external')->get('id');
+            if ($defaultInternal->count() > 0) $defaultInternal = $defaultInternal->first();
+            if ($defaultExternal->count() > 0) $defaultExternal = $defaultExternal->first();
+
+            $reader = new Reader\Xlsx();
+            $spreadsheet = $reader->load($file);
+            $sheet = $spreadsheet->setActiveSheetIndexByName('input');
+            $highestRow = $sheet->getHighestRow();
+            for ($row = 7; $row <= $highestRow; $row++){
+                //ini_set('max_execution_time', 500);
+                //ini_set('memory_limit', 500);
+                $nis = $sheet->getCell("A$row")->getValue();
+                $nama = $sheet->getCell("C$row")->getValue();
+                if (strlen($nis) > 0 && strlen($nama) > 0) {
+                    $siswa = User::where('nis', $nis)->where('jurusan', $ujian->jurusan)->where('tingkat', $ujian->tingkat)->get('id');
+                    //$siswa = $this->userRepository->table(new Request(['nis' => $nis]));
+                    if ($siswa->count() > 0) {
+                        $siswa = $siswa->first();
+                        $nopes = $sheet->getCell("B$row")->getValue();
+                        if (strlen($nopes) == 0) $nopes = $this->generateNopes(Ujian::where('id', $request->ujian)->first());
+                        $namaPaket = $sheet->getCell("D$row")->getValue();
+                        $dataPaket = PaketSoal::where('name', $namaPaket)->where('jurusan', $ujian->jurusan)->get('id');
+                        if ($dataPaket->count() > 0) {
+                            $dataPaket = $dataPaket->first();
+                            $internal = $sheet->getCell("E$row")->getValue();
+                            $external = $sheet->getCell("F$row")->getValue();
+                            if (strlen($internal) > 0) {
+                                $pengujiInternal = User::where('name', $internal)->where('penguji_type', 'internal')->get('id');
+                                if ($pengujiInternal->count() > 0) {
+                                    $pengujiInternal = $pengujiInternal->first()->id;
+                                } else {
+                                    $pengujiInternal = $defaultInternal->id;
+                                }
+                            } else {
+                                $pengujiInternal = $defaultInternal->id;
+                            }
+                            if (strlen($external) > 0) {
+                                $pengujiExternal = User::where('name', $external)->where('penguji_type', 'external')->get('id');
+                                if ($pengujiExternal->count() > 0) {
+                                    $pengujiExternal = $pengujiExternal->first()->id;
+                                } else {
+                                    $pengujiExternal = $defaultExternal->id;
+                                }
+                            } else {
+                                $pengujiExternal = $defaultExternal->id;
+                            }
+                            $dataPeserta = Peserta::where('user', $siswa->id)->where('ujian', $request->ujian)->get();
+                            if ($dataPeserta->count() == 0) {
+                                $dataPeserta = new Peserta();
+                                $dataPeserta->id = Uuid::uuid4()->toString();
+                                $dataPeserta->user = $siswa->id;
+                                $dataPeserta->ujian = $request->ujian;
+                            } else {
+                                $dataPeserta = $dataPeserta->first();
+                            }
+                            $dataPeserta->paket = $dataPaket->id;
+                            $dataPeserta->nopes = $nopes;
+                            $dataPeserta->penguji_internal = $pengujiInternal;
+                            $dataPeserta->penguji_external = $pengujiExternal;
+                            $dataPeserta->saveOrFail();
+                        }
+                    }
+                }
+            }
+            return $response;
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),500);
+        }
+    }
     private function generateNopes(Ujian $ujian){
         try {
             $number = Peserta::where('ujian', $ujian->id)->orderBy('nopes','desc')->limit(1)->get('nopes');
@@ -309,6 +390,11 @@ class PesertaRepository
                     $internal['meta']['komponen'] = $this->komponenKeterampilan($peserta,'internal');
                     $external['meta']['komponen'] = $this->komponenKeterampilan($peserta,'external');
                 }
+                if ($request->minimal) {
+                    $paket = collect([]);
+                } else {
+                    $paket = $this->packageRepository->table(new Request(['id' => $peserta->paket, 'no_komponen' => 1]))->first();
+                }
                 $response->push([
                     'value' => $peserta->id,
                     'label' => $user['label'],
@@ -319,7 +405,7 @@ class PesertaRepository
                             'internal' => $internal,
                             'external' => $external,
                         ],
-                        'paket' => $this->packageRepository->table(new Request(['id' => $peserta->paket, 'no_komponen' => 1]))->first()
+                        'paket' => $paket
                     ]
                 ]);
             }

@@ -46,6 +46,7 @@ Route::group(['prefix' => 'auth', 'middleware' => 'auth:api'],function (){
         Route::group(['prefix' => 'schedules'],function (){
             Route::any('/',[ScheduleController::class,'crud']);
             Route::any('/peserta',[PesertaController::class,'crud']);
+            Route::post('/peserta/import',[PesertaController::class,'importPeserta']);
         });
         Route::any('/asessors', [AsessorController::class,'crud']);
     });

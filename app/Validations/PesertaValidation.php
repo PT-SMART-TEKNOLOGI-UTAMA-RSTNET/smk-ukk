@@ -14,6 +14,18 @@ use Illuminate\Support\Facades\Validator;
 
 class PesertaValidation
 {
+    public function importPeserta(Request $request) {
+        try {
+            $valid = Validator::make($request->all(),[
+                'ujian' => 'required|string|min:10|exists:ujians,id',
+                'file' => 'required|file|mimetypes:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            ]);
+            if ($valid->fails()) throw new \Exception(collect($valid->errors()->all())->join("<br>"),400);
+            return $request;
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),400);
+        }
+    }
     public function create(Request $request){
         try {
             $valid = Validator::make($request->all(),[

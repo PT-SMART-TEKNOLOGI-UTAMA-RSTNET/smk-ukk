@@ -14,7 +14,8 @@
         "laravel/tinker": "^2.5",
         "laravolt/avatar": "^4.1",
         "phpoffice/phpspreadsheet": "^1.21",
-        "rahul900day/laravel-console-spinner": "^1.0"
+        "rahul900day/laravel-console-spinner": "^1.0",
+        "rap2hpoutre/laravel-log-viewer": "^2.1"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

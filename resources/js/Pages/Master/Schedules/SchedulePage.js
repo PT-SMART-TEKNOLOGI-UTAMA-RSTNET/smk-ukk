@@ -83,7 +83,7 @@ export default class SchedulePage extends React.Component{
     async loadSchedules(){
         this.setState({loading:true,schedules:[]});
         try {
-            let response = await getSchedules(this.state.token);
+            let response = await getSchedules(this.state.token,{minimal:true});
             if (response.data.params === null) {
                 showErrorMessage(response.data.message);
             } else {
@@ -109,7 +109,6 @@ export default class SchedulePage extends React.Component{
             showErrorMessage(error.response.data.message);
         }
         this.setState({loading:false});
-        this.loadSchedules();
     }
     async loadMe(){
         this.setState({loading:true,current_user:null});
@@ -129,6 +128,7 @@ export default class SchedulePage extends React.Component{
         }
         this.setState({loading:false});
         this.loadJurusan();
+        this.loadSchedules();
     }
     render(){
         const columns = [
@@ -175,10 +175,11 @@ export default class SchedulePage extends React.Component{
                             <div className="card-header">
                                 <h3 className="card-title"/>
                                 <div className="card-tools">
-                                    <button disabled={this.state.loading} onClick={this.toggleCreate} className="btn btn-primary btn-sm mr-1" title="Tambah Data">
-                                        <i className="fas fa-plus-circle"/> Tambah Data
-                                    </button>
-                                    <button disabled={this.state.loading} onClick={this.loadSchedules} className="btn mr-1">{this.state.loading ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                    {this.state.current_user === null ? null :
+                                        this.state.current_user.meta.level !== 'admin' ? null :
+                                            <button disabled={this.state.loading} onClick={this.toggleCreate} className="btn btn-outline-primary btn-flat mr-1" title="Tambah Data"><i className="fas fa-plus-circle"/> Tambah Data Ujian</button>
+                                    }
+                                    <button disabled={this.state.loading} onClick={this.loadSchedules} className="btn btn-outline-secondary btn-flat">{this.state.loading ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
                                 </div>
                             </div>
                             <DataTable

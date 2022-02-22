@@ -11,6 +11,7 @@ import BreadCrumbs from "../../../../Components/Layouts/BreadCrumbs";
 import {currentUser,allUsers} from "../../../../Services/AuthService";
 import {savePeserta,getSchedules} from "../../../../Services/Master/ScheduleService";
 import {getPackages} from "../../../../Services/Master/PackageService";
+import ImportPeserta from "./Modals/ImportPeserta";
 
 export default class PesertaPage extends React.Component{
     constructor(props){
@@ -27,8 +28,7 @@ export default class PesertaPage extends React.Component{
             },
             current_schedule : null,
             modals : {
-                create : { open : false, data : null },
-                update : { open : false, data : null, peserta_data : null }
+                upload : { open : false }
             },
             button : {
                 submit : { disabled : false, icon : <i className="fas fa-save"/>, text : 'Simpan' }
@@ -45,9 +45,17 @@ export default class PesertaPage extends React.Component{
         this.handleDeletePeserta = this.handleDeletePeserta.bind(this);
         this.submitSavePeserta = this.submitSavePeserta.bind(this);
         this.handleInput = this.handleInput.bind(this);
+        this.toggleModal = this.toggleModal.bind(this);
+        this.handleFromImport = this.handleFromImport.bind(this);
     }
     componentDidMount(){
         this.loadMe();
+    }
+    toggleModal(what,data=null){
+        let modals = this.state.modals;
+        modals[what].open = ! this.state.modals[what].open;
+        modals[what].data = data;
+        this.setState({modals});
     }
     handleInput(event,index){
         let form = this.state.form;
@@ -75,10 +83,25 @@ export default class PesertaPage extends React.Component{
     handleAddPeserta(){
         let form = this.state.form;
         form.peserta.push({
-            index : form.peserta.length, value : null, nis : null, nopes : '', rombel : null, penguji_internal : null, penguji_external : null, paket_soal : null,
-            siswa : null, is_default : false
+            index : form.peserta.length,
+            value : null,
+            nis : null,
+            nopes : '',
+            rombel : null,
+            penguji_internal : null,
+            penguji_external : null,
+            paket_soal : null,
+            siswa : null,
+            is_default : false
         });
         this.setState({form});
+    }
+    handleFromImport(data){
+        console.log(data);
+        let form = this.state.form;
+        if (form.peserta.findIndex((i) => i.nis === data.nis).length > 0) {
+            console.log(form);
+        }
     }
     populateForm(){
         let loading = this.state.loading;
@@ -283,6 +306,13 @@ export default class PesertaPage extends React.Component{
     render(){
         return (
             <>
+                <ImportPeserta
+                    ujian={this.state.current_schedule}
+                    handleUpdate={this.loadSchedules}
+                    handleClose={this.toggleModal}
+                    open={this.state.modals.upload.open}
+                    token={this.state.token}/>
+
                 <MainHeader current_user={this.state.current_user}/>
                 <MainSideBar current_user={this.state.current_user}/>
 
@@ -297,6 +327,7 @@ export default class PesertaPage extends React.Component{
                                 <div className="card-tools">
                                     <button type="button" disabled={this.state.button.submit.disabled || this.state.loading.peserta} onClick={this.submitSavePeserta} className="btn btn-outline-success btn-flat mr-1">{this.state.button.submit.icon} {this.state.button.submit.text}</button>
                                     <button type="button" disabled={this.state.loading.paket || this.state.loading.penguji || this.state.loading.siswa || this.state.button.submit.disabled} onClick={this.handleAddPeserta} className="btn btn-outline-primary btn-flat mr-1" title="Tambah Peserta"><i className="fas fa-plus-circle"/> Tambah Peserta</button>
+                                    <button title="Import data peserta dari file excel" type="button" disabled={this.state.loading.peserta || this.state.button.submit.disabled} className="btn btn-outline-primary btn-flat mr-1" onClick={()=>this.toggleModal('upload')}><i className="fas fa-file-excel"/> Import Peserta</button>
                                     <button title="Reload Data Siswa" type="button" disabled={this.state.loading.siswa || this.state.button.submit.disabled} onClick={this.loadSiswa} className="btn btn-outline-secondary btn-flat mr-1">{this.state.loading.siswa ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
                                     <button title="Reload Data Paket Soal" type="button" disabled={this.state.loading.paket || this.state.button.submit.disabled} onClick={this.loadPaketSoal} className="btn btn-outline-secondary btn-flat mr-1">{this.state.loading.paket ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
                                     <button title="Reload Data Penguji" type="button" disabled={this.state.loading.penguji || this.state.button.submit.disabled} onClick={this.loadPenguji} className="btn btn-outline-secondary btn-flat mr-1">{this.state.loading.penguji ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
@@ -354,6 +385,7 @@ export default class PesertaPage extends React.Component{
                             <div className="card-footer text-right pr-2">
                                 <button type="button" disabled={this.state.button.submit.disabled || this.state.loading.peserta} onClick={this.submitSavePeserta} className="btn btn-outline-success btn-flat mr-1">{this.state.button.submit.icon} {this.state.button.submit.text}</button>
                                 <button type="button" disabled={this.state.loading.paket || this.state.loading.penguji || this.state.loading.siswa || this.state.button.submit.disabled} onClick={this.handleAddPeserta} className="btn btn-outline-primary btn-flat mr-1" title="Tambah Peserta"><i className="fas fa-plus-circle"/> Tambah Peserta</button>
+                                <button title="Import data peserta dari file excel" type="button" disabled={this.state.loading.peserta || this.state.button.submit.disabled} className="btn btn-outline-primary btn-flat mr-1" onClick={()=>this.toggleModal('upload')}><i className="fas fa-file-excel"/> Import Peserta</button>
                                 <button title="Reload Data Siswa" type="button" disabled={this.state.loading.siswa || this.state.button.submit.disabled} onClick={this.loadSiswa} className="btn btn-outline-secondary btn-flat mr-1">{this.state.loading.siswa ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
                                 <button title="Reload Data Paket Soal" type="button" disabled={this.state.loading.paket || this.state.button.submit.disabled} onClick={this.loadPaketSoal} className="btn btn-outline-secondary btn-flat mr-1">{this.state.loading.paket ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
                                 <button title="Reload Data Penguji" type="button" disabled={this.state.loading.penguji || this.state.button.submit.disabled} onClick={this.loadPenguji} className="btn btn-outline-secondary btn-flat mr-1">{this.state.loading.penguji ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>

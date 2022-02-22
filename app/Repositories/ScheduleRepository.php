@@ -117,6 +117,10 @@ class ScheduleRepository
                     $ujians = $ujians->whereIn('id', $distinctUjianId)->where('start_at', '<=', $dateNow)->where('end_at', '>=', $dateNow);
                     $is_penguji = true;
                     break;
+                case 'admin' :
+                    if ($user_agent == 'android') $ujians = $ujians->where('id', 'dasd');
+
+                    break;
             }
             $ujians = $ujians->get();
             foreach ($ujians as $ujian){
@@ -126,7 +130,11 @@ class ScheduleRepository
                         $peserta = $this->pesertaRepository->table(new Request(['ujian' => $ujian->id, 'user' => $user->id]));
                     }
                 } else {
-                    $peserta = $this->pesertaRepository->table(new Request(['ujian' => $ujian->id]));
+                    if ($request->minimal){
+                        $peserta = $this->pesertaRepository->table(new Request(['ujian' => $ujian->id, 'minimal' => true]));
+                    } else {
+                        $peserta = $this->pesertaRepository->table(new Request(['ujian' => $ujian->id]));
+                    }
                 }
                 $response->push([
                     'value' => $ujian->id,

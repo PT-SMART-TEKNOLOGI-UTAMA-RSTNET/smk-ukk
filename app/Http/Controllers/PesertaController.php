@@ -15,6 +15,15 @@ class PesertaController extends Controller
         $this->repository = new PesertaRepository();
         $this->validation = new PesertaValidation();
     }
+    public function importPeserta(Request $request) {
+        try {
+            $valid = $this->validation->importPeserta($request);
+            $params = $this->repository->importPeserta($valid);
+            return responseFormat(200, 'data berhasil dibaca', $params);
+        } catch (\Exception $exception) {
+            return responseFormat($exception->getCode(), $exception->getMessage());
+        }
+    }
     public function crud(Request $request){
         try {
             $code = 400; $message = 'Undefined Method'; $params = null;

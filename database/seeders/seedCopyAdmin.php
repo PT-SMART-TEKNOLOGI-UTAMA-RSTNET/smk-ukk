@@ -53,6 +53,9 @@ class seedCopyAdmin extends Seeder
                     $dataSiswa = DB::connection(config('database.erapor'))->table('siswas')->where('user', $user->id)->limit(1)->get();
                     if ($dataSiswa->count() > 0){
                         $dataSiswa = $dataSiswa->first();
+                        $newUser->siswa = $dataSiswa->id;
+                        $newUser->nis = $dataSiswa->nis;
+                        $newUser->nisn = $dataSiswa->nisn;
                         $dataTapel = DB::connection(config('database.erapor'))->table('tapels')->where('active',true)->get();
                         if ($dataTapel->count() > 0) {
                             $dataTapel = $dataTapel->first();
@@ -62,12 +65,9 @@ class seedCopyAdmin extends Seeder
                                 $dataRombel = DB::connection(config('database.erapor'))->table('rombels')->where('id', $dataRombelMember->rombel)->get();
                                 if ($dataRombel->count() > 0) {
                                     $dataRombel = $dataRombel->first();
-                                    $newUser->tingkat = $dataRombel->tingkat;
                                     $newUser->jurusan = $dataRombel->jurusan;
+                                    $newUser->tingkat = $dataRombel->tingkat;
                                     $newUser->rombel = $dataRombel->name;
-                                    $newUser->siswa = $dataSiswa->id;
-                                    $newUser->nis = $dataSiswa->nis;
-                                    $newUser->nisn = $dataSiswa->nisn;
                                 }
                             }
                         }
