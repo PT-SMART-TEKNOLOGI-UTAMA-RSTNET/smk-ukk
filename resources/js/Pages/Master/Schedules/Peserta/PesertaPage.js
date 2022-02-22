@@ -142,12 +142,20 @@ export default class PesertaPage extends React.Component{
         });
         if (hasDuplicate) {
             seen = Array.from(seen);
-            seen.map((item) => namanya.push('<b>' + item.label + '</b>'));
+            seen.map((item) => item === null ? false : namanya.push('<b>' + item.label + '</b>'));
             showErrorMessage('Duplikat peserta terdeteksi atas nama ' + namanya.join(', '));
         } else if (duplicateNopes) {
             seenNopes = Array.from(seenNopes);
-            seenNopes.map((item) => namanya.push('<b>' + item + '</b>'));
+            seenNopes.map((item) => item === null ? false : namanya.push('<b>' + item + '</b>'));
             showErrorMessage('Duplikat nomor peserta terdeteksi dengan nomor ' + namanya.join(', '));
+        /*} else if (this.state.form.peserta.filter((i) => i.siswa === null).length > 0) {
+            showErrorMessage('Sebanyak ' + this.state.form.peserta.filter((i) => i.siswa === null).length + ' peserta belum dipilih siswanya');
+        } else if (this.state.form.peserta.filter((i) => i.paket_soal === null).length > 0) {
+            showErrorMessage('Sebanyak ' + this.state.form.peserta.filter((i) => i.paket_soal === null).length + ' peserta belum dipilih paket soallnya');
+        } else if (this.state.form.peserta.filter((i) => i.penguji_external === null).length > 0) {
+            showErrorMessage('Sebanyak ' + this.state.form.peserta.filter((i) => i.penguji_internal === null).length + ' peserta belum dipilih penguji internalnya');
+        } else if (this.state.form.peserta.filter((i) => i.penguji_internal === null).length > 0) {
+            showErrorMessage('Sebanyak ' + this.state.form.peserta.filter((i) => i.penguji_external === null).length + ' peserta belum dipilih penguji externalnya');*/
         } else {
             let button = this.state.button;
             button.submit.disabled = true;
@@ -155,19 +163,40 @@ export default class PesertaPage extends React.Component{
             button.submit.text = 'Menyimpan';
             this.setState({button});
             try {
-                let response = await savePeserta(this.state.token,this.state.form);
-                if (response.data.params === null){
-                    showErrorMessage(response.data.message);
-                } else {
-                    showSuccessMessage(response.data.message);
-                    this.loadSchedules();
+                const formData = new FormData();
+                formData.append('_method', 'put');
+                formData.append('jadwal', this.state.form.jadwal);
+                this.state.form.peserta.map((peserta, i)=>{
+                    if (peserta.siswa !== null && peserta.paket_soal !== null && peserta.penguji_internal !== null && peserta.penguji_external !== null) {
+                        if (peserta.value !== null) formData.append('peserta[' + i + '][value]', peserta.value);
+                        formData.append('peserta[' + i + '][siswa]', peserta.siswa.value);
+                        formData.append('peserta[' + i + '][paket_soal]', peserta.paket_soal.value);
+                        formData.append('peserta[' + i + '][nopes]', peserta.nopes);
+                        formData.append('peserta[' + i + '][penguji_internal]', peserta.penguji_internal.value);
+                        formData.append('peserta[' + i + '][penguji_external]', peserta.penguji_external.value);
+                    }
+                });
+                this.state.form.deleted_peserta.map((peserta, i)=>{
+                    formData.append('deleted_peserta[' + i + ']', peserta.value);
+                });
+                try {
+                    let response = await savePeserta(this.state.token, formData);
+                    if (response.data.params === null){
+                        showErrorMessage(response.data.message);
+                    } else {
+                        this.setState({form:{ _method : 'put', jadwal : '', peserta : [], deleted_peserta : [],}});
+                        showSuccessMessage(response.data.message);
+                        this.loadSchedules();
+                    }
+                } catch (er) {
+                    if (er.response.status === 401){
+                        window.location.href = window.origin + '/logout';
+                        er.response.data.message = 'Waktu sesi telah habis';
+                    }
+                    showErrorMessage(er.response.data.message);
                 }
-            } catch (er) {
-                if (er.response.status === 401){
-                    window.location.href = window.origin + '/logout';
-                    er.response.data.message = 'Waktu sesi telah habis';
-                }
-                showErrorMessage(er.response.data.message);
+            } catch (error) {
+                showErrorMessage('Unable to create form');
             }
             button.submit.disabled = false;
             button.submit.icon = <i className="fas fa-save"/>;

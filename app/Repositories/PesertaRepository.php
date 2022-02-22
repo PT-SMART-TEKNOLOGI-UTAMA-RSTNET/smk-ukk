@@ -144,17 +144,17 @@ class PesertaRepository
                         $peserta->id = Uuid::uuid4()->toString();
                     }
                     $peserta->nopes = strlen($inputPeserta['nopes']) === 0 ? $this->generateNopes($ujian) : $inputPeserta['nopes'];
-                    $peserta->user = $inputPeserta['siswa']['value'];
-                    $peserta->paket = $inputPeserta['paket_soal']['value'];
+                    $peserta->user = $inputPeserta['siswa'];
+                    $peserta->paket = $inputPeserta['paket_soal'];
                     $peserta->ujian = $ujian->id;
-                    $peserta->penguji_internal = $inputPeserta['penguji_internal']['value'];
-                    $peserta->penguji_external = $inputPeserta['penguji_external']['value'];
+                    $peserta->penguji_internal = $inputPeserta['penguji_internal'];
+                    $peserta->penguji_external = $inputPeserta['penguji_external'];
                     $peserta->saveOrFail();
                 }
             }
             if (collect($request->deleted_peserta)->count() > 0) {
                 foreach ($request->deleted_peserta as $inputPeserta){
-                    Peserta::where('id', $inputPeserta['value'])->delete();
+                    Peserta::where('id', $inputPeserta)->delete();
                 }
             }
             return $request->all();

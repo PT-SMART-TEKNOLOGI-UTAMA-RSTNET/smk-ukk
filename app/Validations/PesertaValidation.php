@@ -28,19 +28,18 @@ class PesertaValidation
     }
     public function create(Request $request){
         try {
+            //dd($request->all());
             $valid = Validator::make($request->all(),[
                 'jadwal' => 'required|string|min:10|exists:ujians,id',
                 'peserta' => 'nullable|array',
                 'peserta.*.value' => 'nullable|exists:pesertas,id',
-                'peserta.*.siswa' => 'required|array|size:3',
-                'peserta.*.siswa.value' => 'required|string|min:10|exists:users,id',
-                'peserta.*.siswa.nopes' => 'nullable|unique:pesertas,nopes',
-                'peserta.*.paket_soal' => 'required|array|size:3',
-                'peserta.*.paket_soal.value' => 'required|string|min:10|exists:paket_soals,id',
-                'peserta.*.penguji_internal' => 'required|array|size:3',
-                'peserta.*.penguji_internal.value' => 'required|string|min:10|exists:users,id',
-                'peserta.*.penguji_external' => 'required|array|size:3',
-                'peserta.*.penguji_external.value' => 'required|string|min:10|exists:users,id',
+                'peserta.*.siswa' => 'required|string|min:10|exists:users,id',
+                'peserta.*.nopes' => 'nullable',
+                'peserta.*.paket_soal' => 'required|string|min:10|exists:paket_soals,id',
+                'peserta.*.penguji_internal' => 'required|string|min:10|exists:users,id',
+                'peserta.*.penguji_external' => 'required|string|min:10|exists:users,id',
+                'deleted_peserta' => 'nullable|array',
+                'deleted_peserta.*' => 'required|string|min:10|exists:pesertas,id'
             ]);
             if ($valid->fails()) throw new \Exception(collect($valid->errors()->all())->join("<br>"),400);
             return $request;
