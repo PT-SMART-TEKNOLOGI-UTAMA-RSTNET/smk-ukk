@@ -20,7 +20,7 @@ export default class DashboardPage extends React.Component{
             token : localStorage.getItem('access_token'),
             current_user : null,
             breadcrumbs : [],
-            loading : false,
+            loading : false, showHide : true,
             table : {
                columns : [], data : [],
             },
@@ -53,15 +53,6 @@ export default class DashboardPage extends React.Component{
         let table = this.state.table;
         table.columns = [], table.data = [];
         if (this.state.current_user.meta.penguji.type !== null) {
-            table.columns = [
-                { name : 'Judul Ujian', selector : row => row.label },
-                { name : 'Jadwal', width : '200px', wrap : true,
-                    cell : row => moment(row.meta.tanggal.mulai).format('DD MMMM yyyy, hh:mm') + ' - ' + moment(row.meta.tanggal.selesai).format('DD MMMM yyyy, hh:mm'),
-                    selector : row => row.meta.tanggal.mulai },
-                { name : 'Aksi', grow : 0, center : true, cell : row =>
-                        <a href={window.origin+'/mulai-ujian/' + row.value } title="Mulai Ujian" className="btn btn-outline-success"><i className="fas fa-play"/></a>
-                },
-            ];
             this.loadJadwalUjian();
         }
         this.setState({table});
@@ -86,6 +77,15 @@ export default class DashboardPage extends React.Component{
         this.populateDashboard();
     }
     render(){
+        const columns = [
+            { name : 'Judul Ujian', selector : row => row.label },
+            { name : 'Jadwal', width : '200px', wrap : true,
+                cell : row => moment(row.meta.tanggal.mulai).format('DD MMMM yyyy, hh:mm') + ' - ' + moment(row.meta.tanggal.selesai).format('DD MMMM yyyy, hh:mm'),
+                selector : row => row.meta.tanggal.mulai },
+            { name : 'Aksi', grow : 0, center : true, cell : row =>
+                    <a href={window.origin+'/mulai-ujian/' + row.value } title="Mulai Ujian" className="btn btn-outline-success"><i className="fas fa-play"/></a>
+            },
+        ];
         return (
             <>
                 <MainHeader current_user={this.state.current_user}/>
@@ -94,16 +94,63 @@ export default class DashboardPage extends React.Component{
                 <div className="content-wrapper">
                     <BreadCrumbs title="Dashboard" breadcrumbs={this.state.breadcrumbs}/>
                     <section className="content">
-                        <div className="card">
-                            <div className="card-header">
-                                <div className="card-tools">
-                                    <button disabled={this.state.loading} onClick={this.loadJadwalUjian} className="btn btn-sm btn-outline-secondary">{this.state.loading ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                        {this.state.showHide ? null :
+                            <div className="row">
+                                <div className="col-md-3 col-sm-6 col-12">
+                                    <div className="info-box bg-info">
+                                        <span className="info-box-icon"><i className="fa-solid fa-user-graduate"/></span>
+                                        <div className="info-box-content">
+                                            <span className="info-box-text">Peserta</span>
+                                            <span className="info-box-number">41,410</span>
+                                            <div className="progress"><div className="progress-bar" style={{width:'100%'}}/></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="col-md-3 col-sm-6 col-12">
+                                    <div className="info-box bg-info">
+                                        <span className="info-box-icon"><i className="fa-solid fa-user-tie"/></span>
+                                        <div className="info-box-content">
+                                            <span className="info-box-text">Penguji</span>
+                                            <span className="info-box-number">41,410</span>
+                                            <div className="progress"><div className="progress-bar" style={{width:'100%'}}/></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="col-md-3 col-sm-6 col-12">
+                                    <div className="info-box bg-info">
+                                        <span className="info-box-icon"><i className="fa-solid fa-calendar-day"/></span>
+                                        <div className="info-box-content">
+                                            <span className="info-box-text">Jadwal Ujian</span>
+                                            <span className="info-box-number">41,410</span>
+                                            <div className="progress"><div className="progress-bar" style={{width:'100%'}}/></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="col-md-3 col-sm-6 col-12">
+                                    <div className="info-box bg-info">
+                                        <span className="info-box-icon"><i className="fa-solid fa-book"/></span>
+                                        <div className="info-box-content">
+                                            <span className="info-box-text">Paket Soal</span>
+                                            <span className="info-box-number">41,410</span>
+                                            <div className="progress"><div className="progress-bar" style={{width:'100%'}}/></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <DataTable customStyles={compactGrid} dense={true} striped={true}
-                                       persistTableHead progressPending={this.state.loading}
-                                       data={this.state.table.data} columns={this.state.table.columns}/>
-                        </div>
+                        }
+                        {this.state.current_user === null ? null :
+                            this.state.current_user.meta.penguji.type === null ? null :
+                                <div className="card">
+                                    <div className="card-header">
+                                        <div className="card-tools">
+                                            <button disabled={this.state.loading} onClick={this.loadJadwalUjian} className="btn btn-sm btn-outline-secondary">{this.state.loading ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                        </div>
+                                    </div>
+                                    <DataTable customStyles={compactGrid} dense={true} striped={true}
+                                               persistTableHead progressPending={this.state.loading}
+                                               data={this.state.table.data} columns={columns}/>
+                                </div>
+                        }
                     </section>
                 </div>
 
