@@ -37,7 +37,7 @@ class NilaiController extends Controller
             $request = new Request(['ujian' => $request->segment(3)]);
             $valid = $this->validation->cetakKartuUjian($request);
             $params = $this->repository->cetakKartuUjian($valid);
-            return view('cetakKartuUJian', compact('params'));
+            return view('cetak_kartu_ujian', compact('params'));
         } catch (\Exception $exception) {
             return responseFormat($exception->getCode(), $exception->getMessage());
         }
