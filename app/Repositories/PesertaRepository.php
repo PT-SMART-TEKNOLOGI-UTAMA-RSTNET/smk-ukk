@@ -137,7 +137,7 @@ class PesertaRepository
             $ujian = Ujian::where('id', $request->jadwal)->first();
             if (collect($request->peserta)->count() > 0) {
                 foreach ($request->peserta as $inputPeserta){
-                    if (strlen($inputPeserta['value']) > 0) {
+                    if (isset($inputPeserta['value'])){
                         $peserta = Peserta::where('id', $inputPeserta['value'])->first();
                     } else {
                         $peserta = new Peserta();
