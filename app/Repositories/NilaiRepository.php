@@ -32,6 +32,13 @@ class NilaiRepository
         $this->userRepository = new AuthRepository();
     }
 
+    public function cetakKartuUjian(Request $request){
+        try {
+            return $this->table($request);
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),500);
+        }
+    }
     public function downloadNilai(Request $request){
         try {
             $ujian = Ujian::where('id', $request->id)->first();

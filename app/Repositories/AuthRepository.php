@@ -40,6 +40,7 @@ class AuthRepository
                         'level' => $user->user_type,
                         'rombel' => $user->rombel,
                         'jurusan' => $this->jurusanRepository->table(new Request(['id' => $user->jurusan]))->first(),
+                        'tgl_lahir' => $user->bdate,
                         'penguji' => [
                             'type' => $user->penguji_type,
                             'internal' => $user->penguji_internal,

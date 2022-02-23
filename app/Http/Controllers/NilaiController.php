@@ -32,6 +32,16 @@ class NilaiController extends Controller
             return responseFormat($exception->getCode(), $exception->getMessage());
         }
     }
+    public function cetakKartuUjian(Request $request){
+        try {
+            $request = new Request(['ujian' => $request->segment(3)]);
+            $valid = $this->validation->cetakKartuUjian($request);
+            $params = $this->repository->cetakKartuUjian($valid);
+            return view('cetakKartuUJian', compact('params'));
+        } catch (\Exception $exception) {
+            return responseFormat($exception->getCode(), $exception->getMessage());
+        }
+    }
     public function cetakLembarNilai(Request $request) {
         try {
             $valid = $this->validation->cetakLembarNilai($request);

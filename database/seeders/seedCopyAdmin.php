@@ -53,6 +53,7 @@ class seedCopyAdmin extends Seeder
                     $dataSiswa = DB::connection(config('database.erapor'))->table('siswas')->where('user', $user->id)->limit(1)->get();
                     if ($dataSiswa->count() > 0){
                         $dataSiswa = $dataSiswa->first();
+                        $newUser->bdate = $dataSiswa->bdate;
                         $newUser->siswa = $dataSiswa->id;
                         $newUser->nis = $dataSiswa->nis;
                         $newUser->nisn = $dataSiswa->nisn;

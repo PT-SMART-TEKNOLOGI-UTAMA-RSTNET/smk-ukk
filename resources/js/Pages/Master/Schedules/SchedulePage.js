@@ -17,6 +17,7 @@ import {getJurusan} from "../../../Services/EraporService";
 import {getSchedules} from "../../../Services/Master/ScheduleService";
 import CreateSchedule from "./Modals/CreateSchedule";
 import UpdateSchedule from "./Modals/UpdateSchedule";
+import IframePrint from "../../../Components/IframePrint";
 
 export default class SchedulePage extends React.Component{
     constructor(props){
@@ -27,7 +28,8 @@ export default class SchedulePage extends React.Component{
             form : {}, schedules : [],
             modals : {
                 create : { open : false },
-                update : { open : false, data : null }
+                update : { open : false, data : null },
+                printing : { open : false, data : null }
             }
         };
         this.loadMe = this.loadMe.bind(this);
@@ -36,9 +38,23 @@ export default class SchedulePage extends React.Component{
         this.toggleCreate = this.toggleCreate.bind(this);
         this.toggleUpdate = this.toggleUpdate.bind(this);
         this.confirmDelete = this.confirmDelete.bind(this);
+        this.togglePrint = this.togglePrint.bind(this);
+        this.handlePrinting = this.handlePrinting.bind(this);
     }
     componentDidMount(){
         this.loadMe();
+    }
+    handlePrinting(){
+        const iframe = document.getElementById('iframe-print');
+        const iframeWindow = iframe.contentWindow || iframe;
+        iframe.focus();
+        iframeWindow.print();
+    }
+    togglePrint(data=null){
+        let modals = this.state.modals;
+        modals.printing.open = ! this.state.modals.printing.open;
+        if (data !== null) modals.printing.data = window.origin + '/nilai/cetak-kartu/' + data.value;
+        this.setState({modals});
     }
     confirmDelete(data){
         let message = 'Anda yakin ingin menghapus Jadwal Ujian <b>' + data.label + '</b>?';
@@ -145,7 +161,8 @@ export default class SchedulePage extends React.Component{
                     <>
                         <button onClick={()=>this.toggleUpdate(row)} disabled={this.state.loading} type="button" className="btn btn-outline-primary btn-flat btn-xs mr-1"><i className="fas fa-pen"/></button>
                         <button onClick={()=>this.confirmDelete(row)} disabled={this.state.loading} type="button" className="btn btn-outline-danger btn-flat btn-xs mr-1"><i className="fas fa-trash-alt"/></button>
-                        <button onClick={()=> window.location.href = window.origin + '/nilai/' + row.value } disabled={this.state.loading} type="button" className="btn btn-outline-secondary btn-flat btn-xs"><i className="fas fa-check-to-slot"/></button>
+                        <button onClick={()=> window.location.href = window.origin + '/nilai/' + row.value } disabled={this.state.loading} type="button" className="btn btn-outline-secondary btn-flat btn-xs mr-1"><i className="fas fa-check-to-slot"/></button>
+                        <button title="Cetak Kartu Peserta" onClick={()=>this.togglePrint(row)} disabled={this.state.loading} type="button" className="btn btn-outline-primary btn-flat btn-xs"><i className="fas fa-print"/></button>
                     </>
             }
         ];
@@ -175,17 +192,29 @@ export default class SchedulePage extends React.Component{
                             <div className="card-header">
                                 <h3 className="card-title"/>
                                 <div className="card-tools">
-                                    {this.state.current_user === null ? null :
-                                        this.state.current_user.meta.level !== 'admin' ? null :
-                                            <button disabled={this.state.loading} onClick={this.toggleCreate} className="btn btn-outline-primary btn-flat mr-1" title="Tambah Data"><i className="fas fa-plus-circle"/> Tambah Data Ujian</button>
+                                    {this.state.modals.printing.open ?
+                                        <>
+                                            <button onClick={this.handlePrinting} className="btn btn-outline-primary btn-flat mr-1"><i className="fas fa-print"/> Cetak Sekarang</button>
+                                            <button onClick={this.togglePrint} className="btn btn-outline-warning btn-flat"><i className="fas fa-xmark"/> Tutup</button>
+                                        </>
+                                    :
+                                        this.state.current_user === null ? null :
+                                            this.state.current_user.meta.level !== 'admin' ? null :
+                                                <>
+                                                    <button disabled={this.state.loading} onClick={this.toggleCreate} className="btn btn-outline-primary btn-flat mr-1" title="Tambah Data"><i className="fas fa-plus-circle"/> Tambah Data Ujian</button>
+                                                    <button disabled={this.state.loading} onClick={this.loadSchedules} className="btn btn-outline-secondary btn-flat">{this.state.loading ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
+                                                </>
                                     }
-                                    <button disabled={this.state.loading} onClick={this.loadSchedules} className="btn btn-outline-secondary btn-flat">{this.state.loading ? <i className="fas fa-spin fa-circle-notch"/> : <i className="fas fa-refresh"/>}</button>
                                 </div>
                             </div>
-                            <DataTable
-                                customStyles={compactGrid}
-                                dense={true} striped={true} columns={columns} data={this.state.schedules}
-                                persistTableHead progressPending={this.state.loading}/>
+                            {this.state.modals.printing.open ?
+                                <IframePrint print_url={this.state.modals.printing.data}/>
+                                :
+                                <DataTable
+                                    customStyles={compactGrid}
+                                    dense={true} striped={true} columns={columns} data={this.state.schedules}
+                                    persistTableHead progressPending={this.state.loading}/>
+                            }
                         </div>
                     </section>
                 </div>

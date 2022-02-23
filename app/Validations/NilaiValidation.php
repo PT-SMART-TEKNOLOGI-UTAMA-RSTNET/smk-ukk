@@ -26,6 +26,18 @@ class NilaiValidation
             throw new \Exception($exception->getMessage(),500);
         }
     }
+    public function cetakKartuUjian(Request $request){
+        try {
+            $request = $request->merge(['peserta' => $request->segment(3)]);
+            $valid = Validator::make($request->all(),[
+                'ujian' => 'required|string|min:10|exists:ujians,id'
+            ]);
+            if ($valid->fails()) throw new \Exception(collect($valid->errors()->all())->join("<br>"),400);
+            return $request;
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),400);
+        }
+    }
     public function cetakLembarNilai(Request $request){
         try {
             $request = $request->merge(['peserta' => $request->segment(3)]);
