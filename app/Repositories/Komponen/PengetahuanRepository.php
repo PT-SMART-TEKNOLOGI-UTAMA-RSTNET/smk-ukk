@@ -25,14 +25,14 @@ class PengetahuanRepository
             $ujian = Ujian::where('id', $request->ujian)->first();
             $peserta = Peserta::where('ujian', $ujian->id)->where('user', $user->id)->first();
             $soal = PengetahuanKomponen::where('id', $request->komponen)->first();
-            $capaian = CapaianPengetahuan::where('ujian', $peserta->ujian)
+            $capaian = CapaianPengetahuan::where('ujian', $ujian->id)
                 ->where('komponen', $request->komponen)
                 ->where('peserta', $peserta->id)
                 ->get();
             if ($capaian->count() === 0) {
                 $capaian = new CapaianPengetahuan();
                 $capaian->id = Uuid::uuid4()->toString();
-                $capaian->ujian = $request->ujian;
+                $capaian->ujian = $ujian->id;
                 $capaian->peserta = $peserta->id;
                 $capaian->komponen = $request->komponen;
             } else {
@@ -46,7 +46,7 @@ class PengetahuanRepository
                 $capaian->nilai = 0;
             }
             $capaian->saveOrFail();
-            return $this->table(new Request(['id' => $soal->id, 'peserta' => $peserta->id, 'ujian' => $peserta->ujian]));
+            return $this->table(new Request(['id' => $soal->id, 'peserta' => $peserta->id, 'ujian' => $ujian->id, 'paket' => $peserta->paket]));
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),500);
         }
