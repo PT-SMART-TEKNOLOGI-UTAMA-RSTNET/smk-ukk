@@ -13,6 +13,7 @@ use App\Models\CapaianPengetahuan;
 use App\Models\PengetahuanIndikator;
 use App\Models\PengetahuanKomponen;
 use App\Models\Peserta;
+use App\Models\Ujian;
 use Illuminate\Http\Request;
 use Ramsey\Uuid\Uuid;
 
@@ -20,7 +21,9 @@ class PengetahuanRepository
 {
     public function jawab(Request $request){
         try {
-            $peserta = Peserta::where('id', $request->peserta)->first();
+            $user = auth()->guard('api')->user();
+            $ujian = Ujian::where('id', $request->ujian)->first();
+            $peserta = Peserta::where('ujian', $ujian->id)->where('user', $user->id)->first();
             $soal = PengetahuanKomponen::where('id', $request->komponen)->first();
             $capaian = CapaianPengetahuan::where('ujian', $peserta->ujian)
                 ->where('komponen', $request->komponen)
