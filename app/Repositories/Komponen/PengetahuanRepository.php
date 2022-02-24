@@ -19,7 +19,7 @@ class PengetahuanRepository
 {
     public function jawab(Request $request){
         try {
-            $komponen = PengetahuanKomponen::where('id', $request->komponen)->first();
+            $soal = PengetahuanKomponen::where('id', $request->komponen)->first();
             $capaian = CapaianPengetahuan::where('ujian', $request->ujian)
                 ->where('komponen', $request->komponen)
                 ->where('peserta', $request->peserta)
@@ -35,13 +35,13 @@ class PengetahuanRepository
             }
             $capaian->answer_content = $request->isi_jawaban;
             $capaian->indikator = $request->indikator;
-            if ($komponen->type == 'pg') {
-                $capaian->nilai = $capaian->indikator == $komponen->answer ? 1 : 0;
+            if ($soal->type == 'pg') {
+                $capaian->nilai = $capaian->indikator == $soal->answer ? 1 : 0;
             } else {
                 $capaian->nilai = 0;
             }
             $capaian->saveOrFail();
-            return $this->table(new Request(['id' => $capaian->komponen, 'peserta' => $request->peserta, 'ujian' => $request->ujian]));
+            return $this->table(new Request(['id' => $soal->id, 'peserta' => $request->peserta, 'ujian' => $request->ujian]));
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),500);
         }
