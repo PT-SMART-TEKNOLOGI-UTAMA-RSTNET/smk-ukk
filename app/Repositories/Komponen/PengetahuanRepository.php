@@ -12,6 +12,7 @@ namespace App\Repositories\Komponen;
 use App\Models\CapaianPengetahuan;
 use App\Models\PengetahuanIndikator;
 use App\Models\PengetahuanKomponen;
+use App\Models\Peserta;
 use Illuminate\Http\Request;
 use Ramsey\Uuid\Uuid;
 
@@ -19,16 +20,17 @@ class PengetahuanRepository
 {
     public function jawab(Request $request){
         try {
+            $peserta = Peserta::where('id', $request->peserta)->first();
             $soal = PengetahuanKomponen::where('id', $request->komponen)->first();
-            $capaian = CapaianPengetahuan::where('ujian', $request->ujian)
+            $capaian = CapaianPengetahuan::where('ujian', $peserta->ujian)
                 ->where('komponen', $request->komponen)
-                ->where('peserta', $request->peserta)
+                ->where('peserta', $peserta->id)
                 ->get();
             if ($capaian->count() === 0) {
                 $capaian = new CapaianPengetahuan();
                 $capaian->id = Uuid::uuid4()->toString();
                 $capaian->ujian = $request->ujian;
-                $capaian->peserta = $request->peserta;
+                $capaian->peserta = $peserta->id;
                 $capaian->komponen = $request->komponen;
             } else {
                 $capaian = $capaian->first();
@@ -41,7 +43,7 @@ class PengetahuanRepository
                 $capaian->nilai = 0;
             }
             $capaian->saveOrFail();
-            return $this->table(new Request(['id' => $soal->id, 'peserta' => $request->peserta, 'ujian' => $request->ujian]));
+            return $this->table(new Request(['id' => $soal->id, 'peserta' => $peserta->id, 'ujian' => $peserta->ujian]));
         } catch (\Exception $exception) {
             throw new \Exception($exception->getMessage(),500);
         }
