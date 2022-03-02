@@ -14,6 +14,19 @@ use Illuminate\Support\Facades\Validator;
 
 class NilaiValidation
 {
+    public function pengetahuanSave(Request $request){
+        try {
+            $valid = Validator::make($request->all(),[
+                'peserta' => 'required|string|min:10|exists:pesertas,id',
+                'soal' => 'required|string|min:10|exists:pengetahuan_komponens,id',
+                'nilai' => 'required|numeric|min:0|max:100'
+            ]);
+            if ($valid->fails()) throw new \Exception(collect($valid->errors()->all())->join("<br>"),400);
+            return $request;
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),400);
+        }
+    }
     public function downloadNilai(Request $request){
         try {
             $request = $request->merge(['ujian' => $request->segment(3)]);

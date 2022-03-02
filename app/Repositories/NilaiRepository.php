@@ -32,6 +32,31 @@ class NilaiRepository
         $this->userRepository = new AuthRepository();
     }
 
+    public function pengetahuanSave(Request $request) {
+        try {
+            $peserta = Peserta::where('id', $request->peserta)->first();
+            $soal = PengetahuanKomponen::where('id', $request->soal)->first();
+            $capaian = CapaianPengetahuan::where('ujian', $peserta->ujian)
+                ->where('peserta', $peserta->id)
+                ->where('komponen', $soal->id)->get();
+            if ($capaian->count() === 0) {
+                $capaian = new CapaianPengetahuan();
+                $capaian->id = Uuid::uuid4()->toString();
+                $capaian->ujian = $peserta->ujian;
+                $capaian->peserta = $peserta->id;
+                $capaian->komponen = $soal->id;
+            } else {
+                $capaian = $capaian->first();
+            }
+            $capaian->lock = true;
+            $capaian->nilai = $request->nilai;
+            $capaian->indikator = $soal->answer;
+            $capaian->saveOrFail();
+            return $capaian;
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage(),500);
+        }
+    }
     public function cetakKartuUjian(Request $request){
         try {
             return $this->table($request);
@@ -254,7 +279,8 @@ class NilaiRepository
                         }
                         $jml_capaian = $dataCapaian->nilai;
                     } elseif ($soal->type == 'essay') {
-                        $explodeJawaban = explode(' ', $dataCapaian->answer_content);
+                        $jml_capaian = $dataCapaian->nilai;
+                        /*$explodeJawaban = explode(' ', $dataCapaian->answer_content);
                         $capaianIndikator = PengetahuanIndikator::where('komponen', $soal->id);
                         foreach ($explodeJawaban as $key => $item){
                             if ($key == 0) {
@@ -263,10 +289,12 @@ class NilaiRepository
                                 $capaianIndikator = $capaianIndikator->orWhere('content', 'like', "%$item%");
                             }
                         }
-                        $capaianIndikator = $capaianIndikator->get('id');
-                        $jml_capaian = ( $capaianIndikator->count() * 100 ) / $dataIndikators->count();
-                        $dataCapaian->nilai = $jml_capaian;
-                        $dataCapaian->saveOrFail();
+                        $capaianIndikator = $capaianIndikator->get('id');*/
+                        /*$jml_capaian = ( $capaianIndikator->count() * 100 ) / $dataIndikators->count();*/
+                        /*if (!$dataCapaian->lock){
+                            $dataCapaian->nilai = $jml_capaian;
+                            $dataCapaian->saveOrFail();
+                        }*/
                     }
                 }
                 $total_capaian += $jml_capaian;

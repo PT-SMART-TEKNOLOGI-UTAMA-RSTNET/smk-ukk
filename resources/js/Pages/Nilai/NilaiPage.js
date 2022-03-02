@@ -134,13 +134,13 @@ export default class NilaiPage extends React.Component{
         return nilaiAkhir;
     }
     render(){
-        const detailNilai = ({data}) => <DetailNilaiTable data={data.meta.nilai}/>;
+        const detailNilai = ({data}) => <DetailNilaiTable parent={data} data={data.meta.nilai}/>;
         const columns = [
             { name : 'No. Pes', width : '110px', selector : row => row.meta.nopes, center : true },
             { name : 'Nama Peserta', selector : row => row.label },
-            { name : 'P', selector : row => row.meta.nilai[0].value.nilai.konversi, center : true, width : '50px' },
-            { name : 'K', selector : row => row.meta.nilai[1].value.nilai.konversi, center : true, width : '50px' },
-            { name : 'S', selector : row => row.meta.nilai[0].value.nilai.konversi, center : true, width : '50px' },
+            { name : 'P', selector : row => row.meta.nilai[1].value.nilai.konversi, center : true, width : '70px' },
+            { name : 'K', selector : row => row.meta.nilai[0].value.nilai.konversi, center : true, width : '70px' },
+            { name : 'S', selector : row => row.meta.nilai[2].value.nilai.konversi, center : true, width : '70px' },
             { name : 'NA', width : '70px', center : true, selector : row => this.hitungTotalNilai(row) },
             { name : '', width : '70px', center : true, grow : 0,
                 cell : row => <button onClick={()=>this.togglePrinting(window.origin+'/nilai/cetak/' + row.value )} disabled={this.state.loading} className="btn btn-flat btn-outline-primary btn-block btn-sm"><i className="fas fa-print"/></button>

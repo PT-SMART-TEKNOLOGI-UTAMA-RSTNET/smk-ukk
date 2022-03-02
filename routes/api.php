@@ -51,4 +51,5 @@ Route::group(['prefix' => 'auth', 'middleware' => 'auth:api'],function (){
         Route::any('/asessors', [AsessorController::class,'crud']);
     });
     Route::any('/nilai',[NilaiController::class,'crud']);
+    Route::post('/nilai/pengetahuan/save', [NilaiController::class,'pengetahuanSave']);
 });
